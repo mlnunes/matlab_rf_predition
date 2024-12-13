@@ -39,15 +39,11 @@ function [distancias, elevacoes] = levanta_perfil(TX, RX, A, R)
         % Preenche as posições iniciais e finais dos arrays distancias e
         % elevacoes
 
-        elevsiteRX = A(ceil((RX.Latitude - R.LatitudeLimits(1))/...
-                    R.CellExtentInLatitude),...
-                    ceil((RX.Longitude - R.LongitudeLimits(1))/...
-                    R.CellExtentInLongitude));
+        [n, m] = utils.get_raster_idx(RX.Latitude, RX.Longitude, R);
+        elevsiteRX = A(n, m);
         distanciaRX = utils.Propagation.Distance(TX, RX, 'km');
-        elevsiteTX = A(ceil((TX.Latitude - R.LatitudeLimits(1))/...
-                    R.CellExtentInLatitude),...
-                    ceil((TX.Longitude - R.LongitudeLimits(1))/...
-                    R.CellExtentInLongitude));
+        [n, m] = utils.get_raster_idx(TX.Latitude, TX.Longitude, R);
+        elevsiteTX = A(n, m);
         distancias = [0, distancias, distanciaRX];
         elevacoes = [elevsiteTX, elevacoes, elevsiteRX];
     

@@ -25,7 +25,7 @@ function [distancias, elevacoes] = analisa_perfil(TX, vetor_intersec, A, R)
     %----------------------------------------------------------------------
     % Levantamento das elevações dos pontos de intersecção
 
-    aux(:,1) = ceil((vetor_intersec(:,2) - R.LatitudeLimits(1))/R.CellExtentInLatitude);
+    aux(:,1) = ceil((R.LatitudeLimits(2) - vetor_intersec(:,2) )/R.CellExtentInLatitude);
     aux(:,2) = ceil((vetor_intersec(:,1) - R.LongitudeLimits(1))/R.CellExtentInLongitude);
     e = (A(sub2ind(size(A), aux(:,1), aux(:,2))))';
 

@@ -1,4 +1,4 @@
-function [idx] = get_raster_idx(coord, limit, delta, maxdim)
+function [n, m] = get_raster_idx(lat, lon, R)
 % recebe a latitude ou longitude e retorna a linha ou coluna da 
 % matriz do raster
 % idx: linha ou coluna
@@ -7,19 +7,34 @@ function [idx] = get_raster_idx(coord, limit, delta, maxdim)
 % delta: a extenção da célula do raster na dimensão em questão
 % maxdim: número de colunas da matriz do raster na dimensão
 %----------------------------------------------------------------------
-    idx = ceil((coord - limit(1))/delta);
+    n = ceil((R.LatitudeLimits(2) - lat)/...
+        R.CellExtentInLatitude);
+
+    m = ceil((lon - R.LongitudeLimits(1))/...
+        R.CellExtentInLongitude);
 
     %----------------------------------------------------------------------
     % ajusta os limites inferior e superior
-    if idx < 1
+    if n < 1
 
-        idx = 1;
+        n = 1;
 
-    elseif idx > maxdim
+    elseif n > R.RasterSize(1)
 
-        idx = maxdim;
+        n = R.RasterSize(1);
         
     end
+
+    if m < 1
+
+        m = 1;
+
+    elseif m > R.RasterSize(2)
+
+        m = R.RasterSize(2);
+        
+    end
+
     %----------------------------------------------------------------------
 
 end

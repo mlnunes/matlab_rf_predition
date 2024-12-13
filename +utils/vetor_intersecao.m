@@ -12,18 +12,10 @@ function pontos_intersecao = vetor_intersecao(TX, RX, R)
     % Levanta as posições das células da matriz do raster que representam 
     % o TX e RX
 
-    TX_col = utils.get_raster_idx(TX.Longitude, R.LongitudeLimits(1),...
-        R.CellExtentInLongitude, R.RasterSize(2));
+    [TX_row, TX_col] = utils.get_raster_idx(TX.Latitude, TX.Longitude, R);
 
-    TX_row = utils.get_raster_idx(TX.Latitude, R.LatitudeLimits(1),...
-        R.CellExtentInLatitude, R.RasterSize(1));
+    [RX_row, RX_col] = utils.get_raster_idx(RX.Latitude, RX.Longitude, R);
 
-    RX_col = utils.get_raster_idx(RX.Longitude, R.LongitudeLimits(1),...
-        R.CellExtentInLongitude, R.RasterSize(2));
-
-    RX_row = utils.get_raster_idx(RX.Latitude, R.LatitudeLimits(1),...
-        R.CellExtentInLatitude, R.RasterSize(1));
-    
     %---------------------------------------------------------------------
     % Cria vetores das colulas e linhas que compreende a região entre o TX
     % e o RX
@@ -80,7 +72,7 @@ function pontos_intersecao = vetor_intersecao(TX, RX, R)
         % Carrega os pontos dos segmentos de reta TX-RX e o segmento que
         % representa o paralelo que limita a célula em análise
 
-        latitu = R.LatitudeLimits(1)+ m*R.CellExtentInLatitude;
+        latitu = R.LatitudeLimits(2) - m*R.CellExtentInLatitude;
         P1Lat = latitu;
         P2Lat = latitu;
         P1Lon = R.LongitudeLimits(1);

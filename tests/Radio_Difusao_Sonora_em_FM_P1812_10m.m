@@ -16,7 +16,7 @@ enb = txsite("Name","enb", ...
 
 %--------------------------------------------------------------------------
 % Carrega dados do relevo
-[A,R] = readgeoraster("data/Teste_DTM_MG_clip.tif");
+[A,R] = readgeoraster("data/Teste_DTM_MG_copy_clip.tif");
 A = double(A);
 
 %--------------------------------------------------------------------------
@@ -26,19 +26,17 @@ Lb = zeros(size(A));
 
 %--------------------------------------------------------------------------
 % elevação da TX
-elevenb = A(ceil((enb.Latitude - R.LatitudeLimits(1))/...
-        R.CellExtentInLatitude),...
-        ceil((enb.Longitude - R.LongitudeLimits(1))/...
-        R.CellExtentInLongitude));
+[n, m] = utils.get_raster_idx(enb.Latitude, enb.Longitude, R);
+elevenb = A(n, m);
 
 %--------------------------------------------------------------------------
 % Prepara loop de execução para carregar as coordenadas do centro de todas 
 % as células
-centro_i =  R.CellExtentInLatitude / 2;
+centro_i =  -R.CellExtentInLatitude / 2;
 centro_j =  R.CellExtentInLongitude / 2;
-latitudes = R.LatitudeLimits(1):...
-    R.CellExtentInLatitude:...
-    R.LatitudeLimits(2);
+latitudes = R.LatitudeLimits(2):...
+    -R.CellExtentInLatitude:...
+    R.LatitudeLimits(1);
 latitudes = latitudes + centro_i;
 longitudes = R.LongitudeLimits(1):...
     R.CellExtentInLongitude:...
@@ -82,7 +80,7 @@ for n = 1:Llat
         RX.Longitude = longitudes(m);
         run_P1812 = model.P1812(enb, RX, ...
            A, R, enbX, enbY, enbzone, elevenb);
-        Pwr_rx(n, m) = run_P1812.PRX + 11.97; %converte dBuV/m p/ dBm
+        Pwr_rx(n, m) = run_P1812.PRX; % + 11.97; converte dBuV/m p/ dBm
         Lb(n ,m) = run_P1812.Lb;
     
     end
