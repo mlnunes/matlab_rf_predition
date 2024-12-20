@@ -1,7 +1,7 @@
-clear;
-%parpool('local', 4)
+clear; 
+%parpool('localc', 4)
 
-%--------------------------------------------------------------------------
+%--------------------D   ------------------------------------------------------
 % Dados da estaçao TX
 freq = 102.1e6;
 movel_hrx = 1.6;
@@ -26,19 +26,17 @@ Lb = zeros(size(A));
 
 %--------------------------------------------------------------------------
 % elevação da TX
-elevenb = A(ceil((enb.Latitude - R.LatitudeLimits(1))/...
-        R.CellExtentInLatitude),...
-        ceil((enb.Longitude - R.LongitudeLimits(1))/...
-        R.CellExtentInLongitude));
+[n, m] = utils.get_raster_idx(enb.Latitude, enb.Longitude, R);
+elevenb = A(n, m);
 
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 % Prepara loop de execução para carregar as coordenadas do centro de todas 
 % as células
-centro_i =  R.CellExtentInLatitude / 2;
+centro_i =  -R.CellExtentInLatitude / 2;
 centro_j =  R.CellExtentInLongitude / 2;
-latitudes = R.LatitudeLimits(1):...
-    R.CellExtentInLatitude:...
-    R.LatitudeLimits(2);
+latitudes = R.LatitudeLimits(2):...
+    -R.CellExtentInLatitude:...
+    R.LatitudeLimits(1);
 latitudes = latitudes + centro_i;
 longitudes = R.LongitudeLimits(1):...
     R.CellExtentInLongitude:...
@@ -71,27 +69,27 @@ m = 1;
 %parfor n = 1:Llat
 
 for n = 1:Llat
-
+ 
     percent_exec = ((n - 1) * Llon + m)/(Llat * Llon);
     d.Message = sprintf('Executado: %.1f %%', (percent_exec * 100));
     d.Value = percent_exec;
-
+    
     for m = 1:Llon
-
+    
         RX.Latitude = latitudes(n);
         RX.Longitude = longitudes(m);
         run_P1812 = model.P1812(enb, RX, ...
            A, R, enbX, enbY, enbzone, elevenb);
-        Pwr_rx(n, m) = run_P1812.PRX + 11.97; %converte dBuV/m p/ dBm
+        Pwr_rx(n, m) = run_P1812.PRX; % + 11.97; converte dBuV/m p/ dBm
         Lb(n ,m) = run_P1812.Lb;
-
-    end
     
+    end
+
 end
 
-%--------------------------------------------------------------------------
-% Mapa da mancha de predição
 
+%--------------------------------------------------------------------------
+% Mapa da mancha de prediçao
 figure
 axesm('MapProjection','mercator','MapLatLimit',R.LatitudeLimits+[-1 1])
 geoshow(Lb, R, DisplayType="texturemap")
