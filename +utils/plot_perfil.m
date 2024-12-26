@@ -1,29 +1,27 @@
-function plot_perfil(elevacoes, distancias, TX, RX, elevTX, elevRX, A, R)
+function plot_perfil(TX, RX, A, R)
     %----------------------------------------------------------------------
     % Traça o grafico do perfil do terreno, posiçao das estaçoes, linha de
     % visada e primeira zona de Fresnel
     % 
-    % elevacoes: vetor de elevações à partir do TX em m
-    % distancias: vetor de distancias à partir do TX em km
     % TX: classe TX
     % RX: classe RX
-    % elevTX: elevação TX em m
-    % elevRX: elevação RX em m
     %
     %----------------------------------------------------------------------
     % validação dos argumentos
 
     arguments
-        elevacoes (1,:) double
-        distancias (1,:) double
         TX txsite
         RX rxsite
-        elevTX (1, 1) double {mustBePositive}
-        elevRX (1, 1) double {mustBePositive}
         A (:, :) double
         R
     end
-    
+   
+    %---------------------------------------------------------------------
+    %levanta o perfil das elevações do terreno
+    [distancias, elevacoes] = utils.levanta_perfil(TX, RX, A, R);
+    elevTX = elevacoes(1);
+    elevRX = elevacoes(end);
+
     %----------------------------------------------------------------------
     % utiliza apenas região limitada pela mínima e máxima elevações
     min_elevacao = min(elevacoes);
@@ -93,7 +91,7 @@ function plot_perfil(elevacoes, distancias, TX, RX, elevTX, elevRX, A, R)
     %----------------------------------------------------------------------
     % desenha o grafico de campo E recebido
     yyaxis right
-    yticks([0:15:max(ylim)]);
+    yticks(0:15:(1.5 * max(E_enlace)));
     ylabel('E (dBuV/m)')
     plot(distancias_enlace, E_enlace, 'Color', '#00ff88');
 
