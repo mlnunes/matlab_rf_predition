@@ -27,7 +27,7 @@ function plot_perfil(TX, RX, A, R)
     min_elevacao = min(elevacoes);
     distancias_km = distancias * 1000;
     
-    %----------------------------------------------------------------------
+    %-----------------------------------------------------------------------b
     % cálculo do elipsoide da primeira zona de Fresnel
     % F: vetor raio do elipsoide
     % Fl: limite inferior do elipsoide em relação a linha de visada
