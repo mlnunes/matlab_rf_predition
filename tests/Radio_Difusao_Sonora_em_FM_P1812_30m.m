@@ -20,6 +20,10 @@ enb = txsite("Name","enb", ...
 A = double(A);
 
 %--------------------------------------------------------------------------
+% Carrega dados do clutter
+[C, S] = utils.read_clutter()
+
+%--------------------------------------------------------------------------
 % Cria variáveis de saída
 Pwr_rx = zeros(size(A));
 Lb = zeros(size(A));

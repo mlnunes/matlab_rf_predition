@@ -20,6 +20,23 @@ enb = txsite("Name","enb", ...
 A = double(A);
 
 %--------------------------------------------------------------------------
+% Carrega dados do clutter, se não houver arqivo de clutter uma matriz
+% default com representação área aberta/rural
+arquivo_clutter = "data/Teste_Clutter_MG_clip.tif";
+if ~isempty(arquivo_clutter)
+
+    [C, S] = utils.read_clutter(arquivo_clutter);
+
+else
+   
+    C = 2 * ones(size(A));
+    S = R;
+
+end
+
+C = double(C);
+
+%--------------------------------------------------------------------------
 % Cria variáveis de saída
 Pwr_rx = zeros(size(A));
 Lb = zeros(size(A));
@@ -79,7 +96,7 @@ for n = 1:Llat
         RX.Latitude = latitudes(n);
         RX.Longitude = longitudes(m);
         run_P1812 = model.P1812(enb, RX, ...
-           A, R, enbX, enbY, enbzone, elevenb);
+           A, R, C, S, enbX, enbY, enbzone, elevenb);
         Pwr_rx(n, m) = run_P1812.PRX; % + 11.97; converte dBuV/m p/ dBm
         Lb(n ,m) = run_P1812.Lb;
     

@@ -373,22 +373,7 @@ THETA = 0.3;
 KSI = 0.8;
 
 Fj = 1.0 - 0.5*( 1.0 + tanh(3.0 * KSI * (theta-THETA)/THETA) );
-switch nargin
-                case 8
-                    p = 1;
-                    pL = 50;
-                    sigmaL = 0;
-                    Gh = 0;
-                    Gv = 0;
-                    Gmax = 0;
-                case 9
-                    pL = 50;
-                    sigmaL = 0;
-                    Gh = 0;
-                    Gv = 0;
-                    Gmax = 0;
-                otherwise
-            end
+
 % Calculate an interpolation factor, Fk, to take account of the great
 % circle path distance:
 

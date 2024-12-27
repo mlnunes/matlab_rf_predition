@@ -17,6 +17,10 @@ enb = txsite("Name","enb", ...
 A = double(A);
 
 %--------------------------------------------------------------------------
+% Carrega dados do clutter
+[C, S] = utils.read_clutter("data/Teste_Clutter_MG_clip.tif");
+
+%--------------------------------------------------------------------------
 % Carrega CSV
 csv = readmatrix("results/Comparacao_P1812_Carangola_10m.csv");
 csv2 = csv( (csv(:, 1) > R.LongitudeLimits(1) & ...
@@ -56,7 +60,7 @@ for n = 1:idx
     %----------------------------------------------------------------------
     % Executa o modelo de predição
     run_P1812 = model.P1812(enb, RX, ...
-        A, R, enbX, enbY, enbzone, elevenb);
+        A, R, C, S, enbX, enbY, enbzone, elevenb);
 
     %----------------------------------------------------------------------
     % Calcula a intensidade de campo elétrico recebida no ponto e a
