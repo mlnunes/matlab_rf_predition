@@ -22,7 +22,7 @@ A = double(A);
 %--------------------------------------------------------------------------
 % Carrega dados do clutter, se não houver arqivo de clutter uma matriz
 % default com representação área aberta/rural
-arquivo_clutter = "data/Teste_Clutter_MG_clip.tif";
+arquivo_clutter = ["data/Teste_Clutter_MG_clip.tif"];
 if ~isempty(arquivo_clutter)
 
     [C, S] = utils.read_clutter(arquivo_clutter);
