@@ -16,6 +16,7 @@ function [A, R] = read_clutter(nome_arquivo)
     arguments
         
         nome_arquivo string
+        
     
     end
     
