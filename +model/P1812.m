@@ -41,7 +41,7 @@ classdef P1812
                 otherwise
             end
 
-            Gant = Gmax + Gv + Gh;
+            Gant = Gmax - Gv - Gh;
             % [dist, Azimuth] = utils.Propagation.Distance(siteTX, siteRX);
             % direcao = mod((450 - Azimuth), 360);
             %PTX = (10^((10*log10(siteTX.TransmitterPower) + Gant)/10)) / 1e3; % pow2db

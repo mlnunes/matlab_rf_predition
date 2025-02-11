@@ -105,7 +105,7 @@ function predicao_area(fileData)
             % encontra distancia, azimute e inclinação do ponto em relação a
             % eNB
             [distanciaPonto, azimutePonto] = utils.Propagation.Distance(base, RX, "m");
-            inclinacaoPonto = rad2deg(acos(((RX.AntennaHeight + A(n, m)) - (base.AntennaHeight + elevBase)) / distanciaPonto));
+            inclinacaoPonto = rad2deg(atan(((RX.AntennaHeight + A(n, m)) - (base.AntennaHeight + elevBase)) / distanciaPonto));
             
             %------------------------------------------------------------------
             % extrai os dados de ganho na direção do ponto
@@ -139,15 +139,24 @@ function predicao_area(fileData)
     % Mapa da mancha de prediçao
     figure
     axesm('MapProjection','mercator','MapLatLimit',R.LatitudeLimits+[-1 1])
-    geoshow(Lb, R, DisplayType="texturemap")
+    geoshow(Pwr_rx, R, DisplayType="texturemap")
     geoshow(base.Latitude,base.Longitude,DisplayType="point",ZData=elevBase, ...
         MarkerEdgeColor="k",MarkerFaceColor="c",MarkerSize=10,Marker="o")
     
-    colormap(turbo)
+    % cria um colormap do branco->amarelo->vermelho 
+    cmap = zeros(256, 3);
+    cmap(1:128, 1:2) = repmat([1 1], 128, 1);
+    cmap(1:128, 3) = linspace(1, 0, 128);
+    cmap(129:end, 1) = 1;
+    cmap(129:end, 2) = linspace(1, 0, 128);
+
+    colormap(cmap)
+    colorbar
+  
     text1 = dadosPredicao.Base.Nome;
     delta = 0.0005;
     textm(base.Latitude+delta,base.Longitude+delta,text1)
     cb = colorbar;
-    cb.Label.String = "Atenuação (dB)";
+    cb.Label.String = "Intensidade de Campo (V/m)";
 
 end

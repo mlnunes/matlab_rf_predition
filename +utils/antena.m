@@ -83,11 +83,15 @@ classdef antena < handle
             %--------------------------------------------------------------
             figure;
             subplot(1,2,1);
-            polarplot(deg2rad(obj.H_ganho(:, 1)), obj.H_ganho(:, 2));
+            ganhoH = obj.Ganho - obj.H_ganho(:, 2);
+            polarplot(deg2rad(obj.H_ganho(:, 1)), ganhoH);
+            rlim([ceil(min(ganhoH)) ceil(max(ganhoH))]);
             title("Diagrama Horizontal");
 
             subplot(1,2,2);
-            polarplot(deg2rad(obj.V_ganho(:, 1)), obj.V_ganho(:, 2));
+            ganhoV = obj.Ganho - obj.V_ganho(:, 2);
+            polarplot(deg2rad(obj.V_ganho(:, 1)), ganhoV);
+            rlim([ceil(min(ganhoV)) ceil(max(ganhoV))]);
             title("Diagrama Vertical");
         end
     

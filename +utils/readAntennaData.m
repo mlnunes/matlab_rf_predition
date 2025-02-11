@@ -48,7 +48,8 @@ function antenaObj = readAntennaData(filename, Nome, Tipo, Azimute, Tilt_mec)
         ganhoH = zeros((idx(2) - idx(1) - 1) ,2);
 
         % espelha o diagrama para o 0° corresponder a frente da antena
-        ganhoH(:, 1) = wrapTo360(antenaData.NAME(idx(1)+1:idx(2)-1) - 180);
+        %ganhoH(:, 1) = wrapTo360(antenaData.NAME(idx(1)+1:idx(2)-1) - 180);
+        ganhoH(:, 1) = antenaData.NAME(idx(1)+1:idx(2)-1);
 
         ganhoH(:, 2) = antenaData.Data(idx(1)+1:idx(2)-1);
         antenaObj.H_ganho = double(ganhoH);
@@ -59,7 +60,8 @@ function antenaObj = readAntennaData(filename, Nome, Tipo, Azimute, Tilt_mec)
         
         % espelha o diagrama para o 0° corresponder a frente da antena
         % alinhado com o horizonte
-        ganhoV(:, 1) = wrapTo360(180 - antenaData.NAME(idx(2) + 1 : nRowsAntenaData));
+        %ganhoV(:, 1) = wrapTo360(180 - antenaData.NAME(idx(2) + 1 : nRowsAntenaData));
+        ganhoV(:, 1) = antenaData.NAME(idx(2) + 1 : nRowsAntenaData);
         
         ganhoV(:, 2) = antenaData.Data(idx(2)+ 1 : nRowsAntenaData);
         antenaObj.V_ganho = double(ganhoV);
