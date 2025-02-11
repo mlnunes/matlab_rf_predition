@@ -82,6 +82,8 @@ classdef P1812
                 obj.PRX = PTX;
                 obj.Lb = 0;
             end
+            obj.PRX = obj.PRX + Gant;
+            obj.Lb = obj.Lb - Gant;
         end
     end
 end

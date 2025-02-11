@@ -20,6 +20,14 @@ enb = txsite("Name","enb", ...
 A = double(A);
 
 %--------------------------------------------------------------------------
+% Carrega os dados da antena da eNB
+antenaFile = "data/AIR6419_B42_NR_dlMacro_H0_V0_3500_PWR.msi";
+antenaModel = "AIR6419";
+azimuteAntena = 0;
+tiltMecanico = 0;
+antenaTX = utils.readAntennaData(antenaFile, antenaModel, "TX", azimuteAntena, tiltMecanico);
+
+%--------------------------------------------------------------------------
 % Carrega dados do clutter, se não houver arqivo de clutter uma matriz
 % default com representação área aberta/rural
 arquivo_clutter = [];
@@ -95,8 +103,22 @@ for n = 1:Llat
     
         RX.Latitude = latitudes(n);
         RX.Longitude = longitudes(m);
+        
+        %------------------------------------------------------------------
+        % encontra distancia, azimute e inclinação do ponto em relação a
+        % eNB
+        [distanciaPonto, azimutePonto] = utils.Propagation.Distance(enb, RX, "m");
+        inclinacaoPonto = rad2deg(acos(((RX.AntennaHeight + A(n, m)) - (enb.AntennaHeight + elevenb)) / distanciaPonto));
+        
+        %------------------------------------------------------------------
+        % extrai os dados de ganho na direção do ponto
+        gMax = antenaTX.Ganho;
+        [gH, gV] = antenaTX.ganhoDirecao(azimutePonto, inclinacaoPonto);
+
+        %------------------------------------------------------------------
+        % calcula a atenuação e nível de sinal recebido
         run_P1812 = model.P1812(enb, RX, ...
-           A, R, C, S, enbX, enbY, enbzone, elevenb);
+           A, R, C, S, enbX, enbY, enbzone, elevenb, 1, 50, 0, gH, gV, gMax);
         Pwr_rx(n, m) = run_P1812.PRX; % + 11.97; converte dBuV/m p/ dBm
         Lb(n ,m) = run_P1812.Lb;
     

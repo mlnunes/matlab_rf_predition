@@ -19,7 +19,7 @@ classdef antena < handle
         Tipo char {mustBeMember(Tipo, {'TX', 'RX'})} = 'TX'
         Azimute double {mustBeInRange(Azimute,0,360,"exclude-upper")} = 0.0
         Tilt_mec double {mustBeInRange(Tilt_mec,-90, 90)} = 0.0
-        Tilt_ele double {mustBeInRange(Tilt_ele,-90, 90)} = 0.0
+        Tilt_ele double {mustBeInRange(Tilt_ele,-180, 180)} = 0.0
         Ganho double = 0.0
         V_ganho (:,2) double
         H_ganho (:,2) double
@@ -51,7 +51,7 @@ classdef antena < handle
                 
                 obj
                 azimutePonto double {mustBeInRange(azimutePonto, -360, 360, "exclusive")}
-                inclinacaoPonto double {mustBeInRange(inclinacaoPonto, -90, 90, "exclusive")}
+                inclinacaoPonto double {mustBeInRange(inclinacaoPonto, -180, 180, "exclusive")}
             
             end
 
