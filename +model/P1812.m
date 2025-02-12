@@ -5,7 +5,7 @@ classdef P1812
     end
 
     methods
-        function obj = P1812(siteTX, siteRX, A, R, C, S, siteTXX, siteTXY, siteTXzone, elevsiteTX, p, pL, sigmaL, Gh, Gv, Gmax)
+        function obj = P1812(siteTX, siteRX, A, R, C, S, gAnt, p, pL, sigmaL)
             % siteTX, siteRX:   classe Site de iteresse
             % A, R:             geoTiff [A, R] dados de elevalção
             % C, S:             geoTiff [C, R] dados de clutter
@@ -16,35 +16,26 @@ classdef P1812
             % sigmal:           Desvios padrão da variabilidade espacial calculados
             %                   utilizando o método stdDev.m, conforme descrito nos
             %                   itens 4.8 e 4.10 da recomendação 1812
-            % Gh:               ganho horizontal da antena transmissora (dB)
-            % Gv:               ganho veritcal da antena receptora (dB)
-            % Gmax:             ganho máximo da antena (dB)
+            % gAnt:             ganho da antena na direção (dB)
             % Lb:               atenuação (dB)
             % p_rx:             Intensidade de campo elétrico (V/m
             
 
             % bloco arguments (conversão, validação, valor padrão)
-            switch nargin
-                case 10
-                    p = 1;
-                    pL = 50;
-                    sigmaL = 0;
-                    Gh = 0;
-                    Gv = 0;
-                    Gmax = 0;
-                case 11
-                    pL = 50;
-                    sigmaL = 0;
-                    Gh = 0;
-                    Gv = 0;
-                    Gmax = 0;
-                otherwise
+            arguments
+                siteTX 
+                siteRX 
+                A 
+                R 
+                C 
+                S
+                gAnt = 0
+                p = 1 
+                pL = 50 
+                sigmaL = 0
+
             end
 
-            Gant = Gmax - Gv - Gh;
-            % [dist, Azimuth] = utils.Propagation.Distance(siteTX, siteRX);
-            % direcao = mod((450 - Azimuth), 360);
-            %PTX = (10^((10*log10(siteTX.TransmitterPower) + Gant)/10)) / 1e3; % pow2db
             PTX = siteTX.TransmitterPower / 1e3;
             [perfil_distancia, perfil_elevacao, perfil_clutter] = utils.levanta_perfil(siteTX, siteRX, A, R, C, S);
             
@@ -82,8 +73,8 @@ classdef P1812
                 obj.PRX = PTX;
                 obj.Lb = 0;
             end
-            obj.PRX = obj.PRX + Gant;
-            obj.Lb = obj.Lb - Gant;
+            obj.PRX = obj.PRX + gAnt;
+            obj.Lb = obj.Lb - gAnt;
         end
     end
 end

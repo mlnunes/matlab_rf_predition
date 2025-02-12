@@ -9,7 +9,6 @@ function predicao_area(fileData)
 
     %----------------------------------------------------------------------
     % Dados da estação base
-    freq = dadosPredicao.frequencia;
     base = txsite("Name", dadosPredicao.Base.Nome,...
         "Latitude", dadosPredicao.Base.Latitude,...
         "Longitude", dadosPredicao.Base.Longitude,...
@@ -17,9 +16,9 @@ function predicao_area(fileData)
         "AntennaHeight", dadosPredicao.Base.Antena.Altura,...
         "TransmitterFrequency", dadosPredicao.frequencia,...
         "TransmitterPower", dadosPredicao.Base.Potencia);
-    [baseX, baseY, baseZone] = utils.deg2utm(base.Latitude, base.Longitude);
-
+    
     % Carrega os dados da antena
+    
     antenaBase = utils.readAntennaData(dadosPredicao.Base.Antena.ArquivoDados, dadosPredicao.Base.Antena.Modelo,...
         dadosPredicao.Base.Antena.Funcao, dadosPredicao.Base.Antena.Azimute, dadosPredicao.Base.Antena.tiltMecanico);
 
@@ -90,6 +89,7 @@ function predicao_area(fileData)
     
     m = 1;
 
+
     for n = 1:Llat
  
         percent_exec = ((n - 1) * Llon + m)/(Llat * Llon);
@@ -103,14 +103,14 @@ function predicao_area(fileData)
             
             %------------------------------------------------------------------
             % encontra distancia, azimute e inclinação do ponto em relação a
-            % eNB
+            % estação TX
             [distanciaPonto, azimutePonto] = utils.Propagation.Distance(base, RX, "m");
             inclinacaoPonto = rad2deg(atan(((RX.AntennaHeight + A(n, m)) - (base.AntennaHeight + elevBase)) / distanciaPonto));
             
             %------------------------------------------------------------------
             % extrai os dados de ganho na direção do ponto
-            gMax = antenaBase.Ganho;
             [gH, gV] = antenaBase.ganhoDirecao(azimutePonto, inclinacaoPonto);
+            gAnt = antenaBase.Ganho - gH - gV;
             
             %------------------------------------------------------------------
             % calcula a atenuação e nível de sinal recebido
@@ -125,7 +125,7 @@ function predicao_area(fileData)
                 
                 case 'P.1812'
                    predicao = model.P1812(base, RX, ...
-                   A, R, C, S, baseX, baseY, baseZone, elevBase, 1, 50, 0, gH, gV, gMax);
+                   A, R, C, S, gAnt);
                    Pwr_rx(n, m) = predicao.PRX; % + 11.97; converte dBuV/m p/ dBm
                    Lb(n ,m) = predicao.Lb;
                 otherwise
