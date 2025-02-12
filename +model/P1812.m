@@ -1,43 +1,58 @@
-classdef P1812
+classdef P1812 < handle
+    %----------------------------------------------------------------------
+    % Cálculo de predição de cobertura conforme modelo ITU-R P.1812-6
+    %
+    % Lb: atenuação resultante (dB)
+    % PRX: intensidade de campo elétrico (dBuV/m)
+    % gAnt: ganho da antena
+    % siteTX: classe TX
+    % siteRX: classe RX
+    % A, R: geoTiff [A, R] dados de elevação
+    % C, S: geoTiff [A, R] dados de clutter
+    %----------------------------------------------------------------------
     properties
-        Lb
-        PRX
+        Lb double
+        PRX double
+        siteTX txsite
+        siteRX rxsite
+        A (:, :) double
+        R
+        C (:, :) double
+        S
     end
 
     methods
-        function obj = P1812(siteTX, siteRX, A, R, C, S, gAnt, p, pL, sigmaL)
-            % siteTX, siteRX:   classe Site de iteresse
-            % A, R:             geoTiff [A, R] dados de elevalção
-            % C, S:             geoTiff [C, R] dados de clutter
-            % p:                Nível de disponibilidade requerido para transmissão
-            %                   
+        function obj = P1812(siteTX, siteRX, A, R, C, S)
+            obj.siteTX = siteTX;
+            obj.siteRX = siteRX;
+            obj.A = A;
+            obj.R = R;
+            obj.C = C;
+            obj.S = S;
+        end
+        
+        function calculo(obj, gAnt, p, pL, sigmaL)
+            %--------------------------------------------------------------
+            % Calcula o nivel de sinal recebido e a atenuação até a estação
+            % de recepção
+            % gAnt: ganho da antena
+            % p:                Nível de disponibilidade requerido para transmissão          
             % pL:               Percentagem de tempo em que a perda de transmissão 
             %                   não ultrapassa o valor calculado (entre 1% e 99%)
             % sigmal:           Desvios padrão da variabilidade espacial calculados
             %                   utilizando o método stdDev.m, conforme descrito nos
             %                   itens 4.8 e 4.10 da recomendação 1812
-            % gAnt:             ganho da antena na direção (dB)
-            % Lb:               atenuação (dB)
-            % p_rx:             Intensidade de campo elétrico (V/m
-            
-
-            % bloco arguments (conversão, validação, valor padrão)
+            %--------------------------------------------------------------
             arguments
-                siteTX 
-                siteRX 
-                A 
-                R 
-                C 
-                S
-                gAnt = 0
+                obj 
+                gAnt double
                 p = 1 
                 pL = 50 
                 sigmaL = 0
-
             end
 
-            PTX = siteTX.TransmitterPower / 1e3;
-            [perfil_distancia, perfil_elevacao, perfil_clutter] = utils.levanta_perfil(siteTX, siteRX, A, R, C, S);
+            PTX = obj.siteTX.TransmitterPower / 1e3;
+            [perfil_distancia, perfil_elevacao, perfil_clutter] = utils.levanta_perfil(obj.siteTX, obj.siteRX, obj.A, obj.R, obj.C, obj.S);
             
             %--------------------------------------------------------------
             % calcula o array de alturas adicional conforme a classificação
@@ -52,20 +67,20 @@ classdef P1812
 
             if idx > 2
                 [obj.Lb, obj.PRX] = tl_p1812( ...
-                            siteTX.TransmitterFrequency/1e9, ...  % GHz
+                            obj.siteTX.TransmitterFrequency/1e9, ...  % GHz
                             p, ...
                             perfil_distancia, ... %(1:idx)./1000, ...
                             perfil_elevacao, ... %(1:idx), ...
                             alturas_clutter, ...
                             perfil_clutter, ...
                             4 * ones(1, idx),... 
-                            siteTX.AntennaHeight, ...
-                            siteRX.AntennaHeight, ...
+                            obj.siteTX.AntennaHeight, ...
+                            obj.siteRX.AntennaHeight, ...
                             1, ...
-                            'phi_t', siteTX.Latitude, ...
-                            'phi_r', siteRX.Latitude, ...
-                            'lam_t', siteTX.Longitude, ...
-                            'lam_r', siteRX.Longitude, ...
+                            'phi_t', obj.siteTX.Latitude, ...
+                            'phi_r', obj.siteRX.Latitude, ...
+                            'lam_t', obj.siteTX.Longitude, ...
+                            'lam_r', obj.siteRX.Longitude, ...
                             'pL', pL, ...
                             'sigmaL', sigmaL, ...
                             'Ptx', PTX);

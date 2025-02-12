@@ -1,4 +1,39 @@
-function predicao_area(fileData)
+function [Lb, Pwr_rx] = predicao_area(fileData)
+    %----------------------------------------------------------------------
+    % Calcula a predição e cobertura de uma área
+    %
+    % fileData: arquivo que contém a estrutura com parâmetros da predição
+    %       dadosPredicao: nome da struct
+    %               modelo de predição: ['Hata', 'P.1812']
+    %               frequencia: frequência da análise (Hz)
+    %               dadosRelevo: arquivo geotif com dados de elevação em metros da
+    %                   área de análise 
+    %               dadosClutter: arquivo geotif com dados de classificação
+    %                   da cobertura do terreno na área de análise
+    %               Movel:
+    %                   Antena:
+    %                       Altura: altura da antena (m)
+    %               Base:
+    %                   Nome: nome da estação
+    %                   Latitude: latitude da estação (graus decimais)
+    %                   Longitude: longitude da estação (graus decimais)
+    %                   Potencia: potência do transmissor (W)
+    %                   Antena:
+    %                       Altura: altura da antena (m)
+    %                       ArquivoDados: arquivo de informações e diagrama
+    %                       de irradiação da antena
+    %                       Modelo: nome do modelo da antena
+    %                       Funcao: ['TX', 'RX']
+    %                       Azimute: azimute a antena
+    %                       tiltMecanico: inclinação da antena
+    %                       Tipo: ['isotropic', 'array']
+    %
+    %   Lb: matriz de valores de atenuação calculada para cada célula do
+    %       geotif da área de análise (dB)
+    %   Pwr_rx: matriz de valores de nível de sinal recebido calculado para
+    %           cada célula do geotif da área de análise
+    %----------------------------------------------------------------------
+   
     arguments
         fileData {mustBeFile}
     end
@@ -21,10 +56,6 @@ function predicao_area(fileData)
     
     antenaBase = utils.readAntennaData(dadosPredicao.Base.Antena.ArquivoDados, dadosPredicao.Base.Antena.Modelo,...
         dadosPredicao.Base.Antena.Funcao, dadosPredicao.Base.Antena.Azimute, dadosPredicao.Base.Antena.tiltMecanico);
-
-    %----------------------------------------------------------------------
-    % Dados estaçao movel
-    movel_hrx = dadosPredicao.Movel.Antena.Altura;
 
     %----------------------------------------------------------------------
     % Caracteristicas da area
@@ -78,8 +109,20 @@ function predicao_area(fileData)
     % Inicializa o loop com dados da primeira célula 
     RX = rxsite("Latitude",latitudes(1), ...
                "Longitude", longitudes(1), ...
-               "AntennaHeight",movel_hrx);
-    
+               "AntennaHeight",dadosPredicao.Movel.Antena.Altura);
+
+    %--------------------------------------------------------------------------
+    % Inicializas a classe de predição conforme o modelo a ser utilizado
+    switch modelo
+        case 'Hata'
+            predicao = model.Hata(base, RX, A, R, C, S);
+
+        case 'P.1812'
+           predicao = model.P1812(base, RX, A, R, C, S);
+
+        otherwise
+            error("Modelo não implementado");
+    end
     %--------------------------------------------------------------------------
     % Cria barra de progresso
     d = uiprogressdlg(uifigure);
@@ -114,49 +157,13 @@ function predicao_area(fileData)
             
             %------------------------------------------------------------------
             % calcula a atenuação e nível de sinal recebido
+            predicao.siteRX = RX;
+            predicao.calculo(gAnt);
+            Lb(n, m) = predicao.Lb;
+            Pwr_rx(n, m) = predicao.PRX;
             
-            switch modelo
-                case 'Hata'
-                    elevRX = A(n, m);
-                    predicao = model.Hata(base.TransmitterFrequency /1e6, ...
-                        base.AntennaHeight, elevBase, movel_hrx, elevRX, distanciaPonto/1000);
-                    Lb(n, m) = predicao.Lb;
-                    Pwr_rx(n, m) = predicao.PRX;
-                
-                case 'P.1812'
-                   predicao = model.P1812(base, RX, ...
-                   A, R, C, S, gAnt);
-                   Pwr_rx(n, m) = predicao.PRX; % + 11.97; converte dBuV/m p/ dBm
-                   Lb(n ,m) = predicao.Lb;
-                otherwise
-                    break
-            end
         end
             
     end
-
-    %--------------------------------------------------------------------------
-    % Mapa da mancha de prediçao
-    figure
-    axesm('MapProjection','mercator','MapLatLimit',R.LatitudeLimits+[-1 1])
-    geoshow(Pwr_rx, R, DisplayType="texturemap")
-    geoshow(base.Latitude,base.Longitude,DisplayType="point",ZData=elevBase, ...
-        MarkerEdgeColor="k",MarkerFaceColor="c",MarkerSize=10,Marker="o")
-    
-    % cria um colormap do branco->amarelo->vermelho 
-    cmap = zeros(256, 3);
-    cmap(1:128, 1:2) = repmat([1 1], 128, 1);
-    cmap(1:128, 3) = linspace(1, 0, 128);
-    cmap(129:end, 1) = 1;
-    cmap(129:end, 2) = linspace(1, 0, 128);
-
-    colormap(cmap)
-    colorbar
-  
-    text1 = dadosPredicao.Base.Nome;
-    delta = 0.0005;
-    textm(base.Latitude+delta,base.Longitude+delta,text1)
-    cb = colorbar;
-    cb.Label.String = "Intensidade de Campo (V/m)";
-
+    close(d)
 end
