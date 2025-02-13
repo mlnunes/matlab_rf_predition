@@ -75,7 +75,7 @@ function antenaObj = readAntennaData(filename, Nome, Tipo, Azimute, Tilt_mec)
     else
         % Valor padrão para o caso de não carregar o arquivo da antena
         antenaObj.Ganho = 0;
-        antenaObj.H_ganho = [(1:360)', zeros(360,1)];
+        antenaObj.H_ganho = [(0:359)', zeros(360,1)];
         antenaObj.V_ganho = antenaObj.H_ganho;
     end
     

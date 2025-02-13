@@ -63,7 +63,7 @@ classdef antena < handle
             azimutePontoAjustado = wrapTo360(azimutePonto - obj.Azimute);
             
             % ganho horizontal da antena na direção do ponto 
-            gDirecaoH = interp1(obj.H_ganho(:, 1), obj.H_ganho(:, 2), azimutePontoAjustado);
+            gDirecaoH = interp1([obj.H_ganho(:, 1); 360], [obj.H_ganho(:, 2); obj.H_ganho(1,2)], azimutePontoAjustado);
     
             %------------------------------------------------------------------
             % extração do ganho vertical
@@ -72,7 +72,7 @@ classdef antena < handle
             inclinacaoPontoAjustada = wrapTo360(inclinacaoPonto - obj.Tilt_ele - obj.Tilt_mec);
     
             % ganho vertical da antena da direção do ponto
-            gDirecaoV = interp1(obj.V_ganho(:, 1), obj.V_ganho(:, 2), inclinacaoPontoAjustada);
+            gDirecaoV = interp1([obj.V_ganho(:, 1); 360], [obj.V_ganho(:, 2); obj.V_ganho(1,2)], inclinacaoPontoAjustada);
 
         end
         %------------------------------------------------------------------

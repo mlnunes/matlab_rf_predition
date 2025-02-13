@@ -1,4 +1,4 @@
-function plot_perfil(TX, RX, A, R, C, S)
+function plot_perfil(fileData, latRX, lonRX)
     %----------------------------------------------------------------------
     % Traça o grafico do perfil do terreno, posiçao das estaçoes, linha de
     % visada e primeira zona de Fresnel
@@ -11,13 +11,62 @@ function plot_perfil(TX, RX, A, R, C, S)
     % validação dos argumentos
 
     arguments
-        TX txsite
-        RX rxsite
-        A (:, :) double
-        R
-        C (:, :) double
-        S
+        fileData
+        latRX double
+        lonRX double
     end
+
+    %----------------------------------------------------------------------
+    % Carrega os parâmetros utilizados para realizar a predição
+    load(fileData, 'dadosPredicao');
+
+    %----------------------------------------------------------------------
+    % Carrega o modelo de predição a ser empregado
+    modelo = dadosPredicao.modeloPredicao;
+    
+    %----------------------------------------------------------------------
+    % Dados da estação TX
+    TX = txsite("Name", dadosPredicao.Base.Nome,...
+        "Latitude", dadosPredicao.Base.Latitude,...
+        "Longitude", dadosPredicao.Base.Longitude,...
+        "Antenna", dadosPredicao.Base.Antena.Tipo,...
+        "AntennaHeight", dadosPredicao.Base.Antena.Altura,...
+        "TransmitterFrequency", dadosPredicao.frequencia,...
+        "TransmitterPower", dadosPredicao.Base.Potencia);
+    
+    
+    % Carrega os dados da antena
+    antenaBase = utils.readAntennaData(dadosPredicao.Base.Antena.ArquivoDados, dadosPredicao.Base.Antena.Modelo,...
+            dadosPredicao.Base.Antena.Funcao, dadosPredicao.Base.Antena.Azimute, dadosPredicao.Base.Antena.tiltMecanico);
+
+    %----------------------------------------------------------------------
+    % Caracteristicas da area
+    % Carrega dados do relevo
+    [A, R] = readgeoraster(dadosPredicao.dadosRelevo);
+    A = double(A);
+
+    %--------------------------------------------------------------------------
+    % Carrega dados do clutter, se não houver arqivo de clutter uma matriz
+    % default com representação área aberta/rural
+    if ~isempty(dadosPredicao.dadosClutter)
+    
+        [C, S] = utils.read_clutter(dadosPredicao.dadosClutter);
+    
+    else
+       
+        C = 2 * ones(size(A));
+        S = R;
+    
+    end
+    
+    C = double(C);
+
+    %--------------------------------------------------------------------------
+    % Dados da estaçao RX
+    RX = rxsite("Latitude",latRX, ...
+               "Longitude", lonRX, ...
+               "AntennaHeight", dadosPredicao.Movel.Antena.Altura);
+
    
     %---------------------------------------------------------------------
     %levanta o perfil das elevações e clutter do terreno
@@ -63,20 +112,56 @@ function plot_perfil(TX, RX, A, R, C, S)
     longitudes_enlace = linspace(TX.Longitude, RX.Longitude, num_pts);
     E_enlace = zeros(1, num_pts);
     RX_enlace = RX;
-    [TXx, TXy, TXzone] = utils.deg2utm(TX.Latitude, TX.Longitude);
     
+    %--------------------------------------------------------------------------
+    % Inicializas a classe de predição conforme o modelo a ser utilizado
+    switch modelo
+        case 'Hata'
+            predicao = model.Hata(TX, RX_enlace, A, R, C, S);
+
+        case 'P.1812'
+           predicao = model.P1812(TX, RX_enlace, A, R, C, S);
+
+        otherwise
+            error("Modelo não implementado");
+    end
+    
+    %----------------------------------------------------------------------
+    % loop de varredura no pontos do enlace
     for idx = 2:num_pts
         
+        %----------------------------------------------------------------------
+        % Carrega as coordenadas da ponto de comparação
         RX_enlace.Latitude = latitudes_enlace(idx);
         RX_enlace.Longitude = longitudes_enlace(idx);
 
+        %------------------------------------------------------------------
+        % encontra distancia, azimute e inclinação do ponto em relação a
+        % estação TX
+        [distanciaPonto, azimutePonto] = utils.Propagation.Distance(TX, RX_enlace, "m");
+        [x, y] = utils.get_raster_idx(RX_enlace.Latitude, RX_enlace.Longitude, R);
+        inclinacaoPonto = rad2deg(atan(((RX_enlace.AntennaHeight + A(x, y)) - (TX.AntennaHeight + elevTX)) / distanciaPonto));
+        
+        %------------------------------------------------------------------
+        % extrai os dados de ganho na direção do ponto
+        [gH, gV] = antenaBase.ganhoDirecao(azimutePonto, inclinacaoPonto);
+        gAnt = antenaBase.Ganho - gH - gV;
+
         %----------------------------------------------------------------------
         % Executa o modelo de predição
-        run_P1812 = model.P1812(TX, RX_enlace, ...
-            A, R, C, S, TXx, TXy, TXzone, elevTX);
-        E_enlace(idx) = run_P1812.PRX;
+        predicao.siteRX = RX_enlace;
+        predicao.calculo(gAnt);
+        E_enlace(idx) = predicao.PRX;
     
     end
+
+    %----------------------------------------------------------------------
+    % Calculo da antenuação no espaço livre TX-RX
+    FSL = utils.Propagation.PathLoss(TX, RX, "Free space");
+    
+    %----------------------------------------------------------------------
+    % Cálculo da antenuação total do enlace
+    Atn = predicao.Lb;
 
     %----------------------------------------------------------------------
     % Definições da área do gráfico
@@ -108,7 +193,7 @@ function plot_perfil(TX, RX, A, R, C, S)
     area(distancias, elevacoes, 'FaceColor', '#90a2b5', 'EdgeColor', '#101010');
     ylim([min(min_elevacao, min(Fl)) inf])
 
-
+    
     %----------------------------------------------------------------------
     % desenha a linha de visada
     plot([distancias(1) distancias(end)], [(elevTX + TX.AntennaHeight) ...
@@ -130,7 +215,27 @@ function plot_perfil(TX, RX, A, R, C, S)
     % define a cor de fundo
     ax = gca;
     ax.Color = 'white';
+    
     hold off;
+
+    %----------------------------------------------------------------------
+    % Informações da simulação
+    fprintf("Dados da simulação: modelo %s\n", modelo)
+    fprintf("TX:\nAltitude: %.1f m\nCoord: %.5f %.5f\n",elevTX, TX.Longitude, TX.Latitude);
+    fprintf("Frequência: %.1f MHz\n", TX.TransmitterFrequency/1e6)
+    fprintf("Potência: %.1f W\n",TX.TransmitterPower)
+    fprintf("Antena: %.1fm\n", TX.AntennaHeight)
+    fprintf("\tGanho: %.1f dBi\n", antenaBase.Ganho)
+    fprintf("\tMáxima potência irradiada, %.1f dBW\n", (10*log10(TX.TransmitterPower) + antenaBase.Ganho))
+    fprintf("\tAzimute: %.1f°\t/ tilt: %.1f°\n", dadosPredicao.Base.Antena.Azimute, dadosPredicao.Base.Antena.tiltMecanico)
+    fprintf("\nRX:\nAltitude: %.1f m\nCoor: %.5f %.5f\n", elevRX, RX.Latitude, RX.Longitude)
+    fprintf("Antena: %.1f m\n", RX.AntennaHeight)
+    fprintf("Nível de sinal recebido: %.1f dBuV\n", E_enlace(end))
+    fprintf("\nEnlace:\nDistancia: %.1f Km\n", distancias(end))
+    fprintf("Angulos: V: %.2f° H: %.2f°\n", inclinacaoPonto, azimutePonto)
+    fprintf("Padrão de atenuação da antena: V: %.2f dB H: %.2f dB\n", gV, gH)
+    fprintf("Antenução no espaço livre: %.1f dB - Atenuação total: %.1f dB\n", FSL, Atn)
+    fprintf("Atenuação do modelo: %.1f dB\n", (Atn - FSL + gAnt))
 
 
 
