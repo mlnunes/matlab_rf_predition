@@ -1,34 +1,9 @@
-classdef Hata < handle
+classdef Hata < model.base
     %----------------------------------------------------------------------
     % Cálculo de predição de cobertura conforme modelo COST-231/Hata
-    %
-    % Lb: atenuação resultante (dB)
-    % PRX: potência recebida (dBm)
-    % siteTX: classe TX
-    % siteRX: classe RX
-    % A, R: geoTiff [A, R] dados de elevação
-    % C, S: geoTiff [A, R] dados de clutter
     %----------------------------------------------------------------------
-    properties
-        Lb double
-        PRX double
-        siteTX txsite
-        siteRX rxsite
-        A (:, :) double
-        R
-        C (:, :) double
-        S
-    end
 
     methods
-        function obj = Hata(siteTX, siteRX, A, R, C, S)
-            obj.siteTX = siteTX;
-            obj.siteRX = siteRX;
-            obj.A = A;
-            obj.R = R;
-            obj.C = C;
-            obj.S = S;
-        end
 
         function calculo(obj, gAnt)
             %--------------------------------------------------------------

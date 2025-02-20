@@ -38,7 +38,9 @@ function [Lb, Pwr_rx] = predicao_area(fileData)
         fileData {mustBeFile}
     end
     
-    load(fileData, 'dadosPredicao');
+    %----------------------------------------------------------------------
+    % Carrega os parâmetros utilizados para realizar a predição
+    run(fileData);
 
     modelo = dadosPredicao.modeloPredicao;
 
@@ -158,7 +160,7 @@ function [Lb, Pwr_rx] = predicao_area(fileData)
             %------------------------------------------------------------------
             % calcula a atenuação e nível de sinal recebido
             predicao.siteRX = RX;
-            predicao.calculo(gAnt);
+            calculo(predicao, gAnt);
             Lb(n, m) = predicao.Lb;
             Pwr_rx(n, m) = predicao.PRX;
             

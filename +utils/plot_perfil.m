@@ -18,7 +18,7 @@ function plot_perfil(fileData, latRX, lonRX)
 
     %----------------------------------------------------------------------
     % Carrega os parâmetros utilizados para realizar a predição
-    load(fileData, 'dadosPredicao');
+    run(fileData)
 
     %----------------------------------------------------------------------
     % Carrega o modelo de predição a ser empregado
@@ -150,7 +150,7 @@ function plot_perfil(fileData, latRX, lonRX)
         %----------------------------------------------------------------------
         % Executa o modelo de predição
         predicao.siteRX = RX_enlace;
-        predicao.calculo(gAnt);
+        calculo(predicao, gAnt);
         E_enlace(idx) = predicao.PRX;
     
     end

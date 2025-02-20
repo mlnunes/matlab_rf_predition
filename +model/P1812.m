@@ -1,35 +1,9 @@
-classdef P1812 < handle
+classdef P1812 < model.base
     %----------------------------------------------------------------------
     % Cálculo de predição de cobertura conforme modelo ITU-R P.1812-6
-    %
-    % Lb: atenuação resultante (dB)
-    % PRX: intensidade de campo elétrico (dBuV/m)
-    % gAnt: ganho da antena
-    % siteTX: classe TX
-    % siteRX: classe RX
-    % A, R: geoTiff [A, R] dados de elevação
-    % C, S: geoTiff [A, R] dados de clutter
     %----------------------------------------------------------------------
-    properties
-        Lb double
-        PRX double
-        siteTX txsite
-        siteRX rxsite
-        A (:, :) double
-        R
-        C (:, :) double
-        S
-    end
 
     methods
-        function obj = P1812(siteTX, siteRX, A, R, C, S)
-            obj.siteTX = siteTX;
-            obj.siteRX = siteRX;
-            obj.A = A;
-            obj.R = R;
-            obj.C = C;
-            obj.S = S;
-        end
         
         function calculo(obj, gAnt, p, pL, sigmaL)
             %--------------------------------------------------------------
@@ -46,11 +20,16 @@ classdef P1812 < handle
             arguments
                 obj 
                 gAnt double
-                p = 1 
-                pL = 50 
-                sigmaL = 0
+                p = 1
+                pL = 50
+                %--------------------------------------------------------------
+                % Cálculo do sigma L segundo a eq. 64 da recomendação:
+                % sigmal = ((0.024*freq+0.52)*(resolução do mapa))^0.28
+                %--------------------------------------------------------------
+                sigmaL = ((24e-3 * (obj.siteTX.TransmitterFrequency/1e9) + 0.52) * (obj.R.CellExtentInLatitude * 111320))^(0.28)
             end
 
+ 
             PTX = obj.siteTX.TransmitterPower / 1e3;
             [perfil_distancia, perfil_elevacao, perfil_clutter] = utils.levanta_perfil(obj.siteTX, obj.siteRX, obj.A, obj.R, obj.C, obj.S);
             
@@ -66,8 +45,7 @@ classdef P1812 < handle
             idx = size(perfil_distancia, 2);
 
             if idx > 2
-                [obj.Lb, obj.PRX] = tl_p1812( ...
-                            obj.siteTX.TransmitterFrequency/1e9, ...  % GHz
+                [obj.Lb, obj.PRX] = tl_p1812( obj.siteTX.TransmitterFrequency/1e9, ...  % GHz
                             p, ...
                             perfil_distancia, ... %(1:idx)./1000, ...
                             perfil_elevacao, ... %(1:idx), ...

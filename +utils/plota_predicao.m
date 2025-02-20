@@ -11,7 +11,9 @@ function plota_predicao(fileData, Z, tipoZ)
         tipoZ string
     end
     
-    load(fileData, 'dadosPredicao');
+    %----------------------------------------------------------------------
+    % Carrega os parâmetros utilizados para realizar a predição
+    run(fileData);
 
     modelo = dadosPredicao.modeloPredicao;
 

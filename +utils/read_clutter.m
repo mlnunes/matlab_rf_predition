@@ -29,12 +29,18 @@ function [A, R] = read_clutter(nome_arquivo)
     % traspõe os valores da classificação do arquivo carregado
     % para a definição do tl_p1812
     
-    A(ismember(A, [3 4 14 15])) = 4;
-    A(ismember(A, [5 6 26])) = 3;
-    A(ismember(A, [1 2])) = 5;
-    A(ismember(A, [0 7 8 9 10 11 12 13 16 17 18 19 22 23 25 27 28])) = 2;
-    A(ismember(A, [20 21 24])) = 1;
+    % A(ismember(A, [3 4 14 15])) = 4;
+    % A(ismember(A, [5 6 26])) = 3;
+    % A(ismember(A, [1 2])) = 5;
+    % A(ismember(A, [0 7 8 9 10 11 12 13 16 17 18 19 22 23 25 27 28])) = 2;
+    % A(ismember(A, [20 21 24])) = 1;
     
+    A(ismember(A, [2 3 4 7 14 15 16 19 24])) = 4;
+    A(ismember(A, [5 6 8 9 10 12 22 23 25])) = 3;
+    A(A == 1) = 5;
+    A(ismember(A, [0 11 13 17 18 26 27 28])) = 2;
+    A(ismember(A, [20 21])) = 1;
+
     %----------------------------------------------------------------------
 
 end
