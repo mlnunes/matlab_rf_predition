@@ -144,7 +144,8 @@ function plot_perfil(fileData, latRX, lonRX)
         
         %------------------------------------------------------------------
         % extrai os dados de ganho na direção do ponto
-        [gH, gV] = antenaBase.ganhoDirecao(azimutePonto, inclinacaoPonto);
+        % [gH, gV] = antenaBase.ganhoDirecao(azimutePonto, inclinacaoPonto);
+        [gH, gV] = ganhoDirecao(antenaBase, azimutePonto, inclinacaoPonto);
         gAnt = antenaBase.Ganho - gH - gV;
 
         %----------------------------------------------------------------------

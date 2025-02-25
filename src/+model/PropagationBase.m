@@ -1,4 +1,4 @@
-classdef base < handle
+classdef PropagationBase < handle
     % base para os modelos de propagação
     % Lb: atenuação resultante (dB)
     % PRX: intensidade de campo elétrico (dBuV/m)
@@ -21,7 +21,7 @@ classdef base < handle
     end
     
     methods
-        function obj = base(siteTX, siteRX, A, R, C, S)
+        function obj = PropagationBase(siteTX, siteRX, A, R, C, S)
             obj.siteTX = siteTX;
             obj.siteRX = siteRX;
             obj.A = A;

@@ -1,4 +1,4 @@
-classdef P1812 < model.base
+classdef P1812 < model.PropagationBase
     %----------------------------------------------------------------------
     % Cálculo de predição de cobertura conforme modelo ITU-R P.1812-6
     %----------------------------------------------------------------------

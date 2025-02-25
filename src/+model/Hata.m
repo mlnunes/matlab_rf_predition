@@ -1,4 +1,4 @@
-classdef Hata < model.base
+classdef Hata < model.PropagationBase
     %----------------------------------------------------------------------
     % Cálculo de predição de cobertura conforme modelo COST-231/Hata
     %----------------------------------------------------------------------

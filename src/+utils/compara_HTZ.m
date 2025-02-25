@@ -7,7 +7,7 @@ function Pwr_rx_csv = compara_HTZ(fileData, HTZData)
 % HTZData: arquivo csv com a medidas exportadas do HTZ
 %--------------------------------------------------------------------------
     
-    load(fileData, 'dadosPredicao');
+    run(fileData);
 
     modelo = dadosPredicao.modeloPredicao;
 
