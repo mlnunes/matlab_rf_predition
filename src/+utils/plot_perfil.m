@@ -42,8 +42,7 @@ function plot_perfil(fileData, latRX, lonRX)
     %----------------------------------------------------------------------
     % Caracteristicas da area
     % Carrega dados do relevo
-    [A, R] = readgeoraster(dadosPredicao.dadosRelevo);
-    A = double(A);
+    [A, R] = utils.loadRaster(dadosPredicao.dadosRelevo, true);
 
     %--------------------------------------------------------------------------
     % Carrega dados do clutter, se não houver arqivo de clutter uma matriz
@@ -59,7 +58,6 @@ function plot_perfil(fileData, latRX, lonRX)
     
     end
     
-    C = double(C);
 
     %--------------------------------------------------------------------------
     % Dados da estaçao RX

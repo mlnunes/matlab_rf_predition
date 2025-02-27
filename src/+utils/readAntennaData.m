@@ -42,29 +42,23 @@ function antenaObj = readAntennaData(filename, Nome, Tipo, Azimute, Tilt_mec)
             % parse dos dados
             antenaObj.Ganho = antenaData.Data(2);
     
-            % encontra os inícios dos segmentos de dados de ganho
-            idx = find(antenaData.Data == 360);
+            % Verifica o número de amostra de ganho horizontal
+            nAmostrasH = antenaData.Data(5);
     
             % carrega o array de ganhos horizontais
-            ganhoH = zeros((idx(2) - idx(1) - 1) ,2);
+            ganhoH = zeros(nAmostrasH ,2);
+            ganhoH(:, 1) = antenaData.NAME(6: nAmostrasH + 5);
     
-            % espelha o diagrama para o 0° corresponder a frente da antena
-            %ganhoH(:, 1) = wrapTo360(antenaData.NAME(idx(1)+1:idx(2)-1) - 180);
-            ganhoH(:, 1) = antenaData.NAME(idx(1)+1:idx(2)-1);
-    
-            ganhoH(:, 2) = antenaData.Data(idx(1)+1:idx(2)-1);
+            ganhoH(:, 2) = antenaData.Data(6: nAmostrasH + 5);
             antenaObj.H_ganho = double(ganhoH);
     
             % carrega o array de ganhos vertiais
-            nRowsAntenaData = size(antenaData, 1);
-            ganhoV = zeros(nRowsAntenaData - idx(2), 2);
+            nAmostrasV = antenaData.Data(nAmostrasH + 6);
+            ganhoV = zeros(nAmostrasV, 2);
             
-            % espelha o diagrama para o 0° corresponder a frente da antena
-            % alinhado com o horizonte
-            %ganhoV(:, 1) = wrapTo360(180 - antenaData.NAME(idx(2) + 1 : nRowsAntenaData));
-            ganhoV(:, 1) = antenaData.NAME(idx(2) + 1 : nRowsAntenaData);
+            ganhoV(:, 1) = antenaData.NAME(nAmostrasH + 7 : nAmostrasV + nAmostrasH + 6);
             
-            ganhoV(:, 2) = antenaData.Data(idx(2)+ 1 : nRowsAntenaData);
+            ganhoV(:, 2) = antenaData.Data(nAmostrasH + 7 : nAmostrasV + nAmostrasH + 6);
             antenaObj.V_ganho = double(ganhoV);
     
         else

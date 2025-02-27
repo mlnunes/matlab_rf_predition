@@ -30,9 +30,8 @@ function plota_predicao(fileData, Z, tipoZ)
     %----------------------------------------------------------------------
     % Caracteristicas da area
     % Carrega dados do relevo
-    [A, R] = readgeoraster(dadosPredicao.dadosRelevo);
-    A = double(A);
-
+    [A, R] = utils.loadRaster(dadosPredicao.dadosRelevo, true);
+    
     %--------------------------------------------------------------------------
     % elevação da estação Base
     [n, m] = utils.get_raster_idx(base.Latitude, base.Longitude, R);

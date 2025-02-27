@@ -1,5 +1,4 @@
 classdef antena < handle
-    %----------------------------------------------------------------------
     % Classe definida para receber dados das antenas
     % Nome: definição da antena, p.ex.: modelo
     % Tipo: classificação se trata-se de uma antena usada para transmissão

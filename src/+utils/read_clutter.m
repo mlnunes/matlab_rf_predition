@@ -23,7 +23,7 @@ function [A, R] = read_clutter(nome_arquivo)
     %----------------------------------------------------------------------
     % carrega os dados de clutter do arquivo geotiff
     
-    [A, R] = readgeoraster(nome_arquivo);
+    [A, R] = utils.loadRaster(nome_arquivo);
     
     %----------------------------------------------------------------------
     % traspõe os valores da classificação do arquivo carregado

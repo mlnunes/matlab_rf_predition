@@ -62,8 +62,7 @@ function [Lb, Pwr_rx] = predicao_area(fileData)
     %----------------------------------------------------------------------
     % Caracteristicas da area
     % Carrega dados do relevo
-    [A, R] = readgeoraster(dadosPredicao.dadosRelevo);
-    A = double(A);
+    [A, R] = utils.loadRaster(dadosPredicao.dadosRelevo, true);
 
     %--------------------------------------------------------------------------
     % Carrega dados do clutter, se não houver arqivo de clutter uma matriz
@@ -79,7 +78,7 @@ function [Lb, Pwr_rx] = predicao_area(fileData)
     
     end
     
-    C = double(C);
+    % C = double(C);
     
     %--------------------------------------------------------------------------
     % Cria variáveis de saída
