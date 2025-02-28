@@ -28,8 +28,8 @@ function Pwr_rx_csv = compara_HTZ(fileData, HTZData)
     %----------------------------------------------------------------------
     % Caracteristicas da area
     % Carrega dados do relevo
-    [A, R] = readgeoraster(dadosPredicao.dadosRelevo);
-    A = double(A);
+    [A, R] = utils.loadRaster(dadosPredicao.dadosRelevo, true);
+    
 
     %--------------------------------------------------------------------------
     % Carrega dados do clutter, se não houver arqivo de clutter uma matriz
@@ -45,7 +45,7 @@ function Pwr_rx_csv = compara_HTZ(fileData, HTZData)
     
     end
     
-    C = double(C);
+    
 
     %--------------------------------------------------------------------------
     % Carrega CSV
