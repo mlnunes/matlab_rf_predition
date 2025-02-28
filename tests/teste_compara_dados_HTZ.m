@@ -1,23 +1,26 @@
 % Realiza a comparação de dados de predição do HTZ
 
-dadosPredicao = {'Radio_FM_Carangola_Hata_30m', ...
-    'Radio_FM_Carangola_1812_10m', ...
-    'Radio_FM_Carangola_1812_30m', ...
-    'Testset_1812_10m', ...
-     'TVD_Anhanguera_1812_30m'};
+%--------------------------------------------------------------------------
+% Lista os possíveis arquivos de configuração disponíveis
+aux = dir ('tests/config/');
+aux = {aux.name};
 
-predicaoHTZ = {'102_1_Carangola_P1812_10m', ...
-                '102_1_Carangola_P1812', ...
-                'Comparacao_P1812_Carangola_10m', ...
-                'Comparacao_P1812_Carangola_10m_AIR6419', ...
-                'Comparacao_P1812'};
+dadosPredicao = aux(3:end);
+
+
+%--------------------------------------------------------------------------
+% Lista os possíveis arquivos de dados do HTZ disponíveis
+aux = dir ('tests/results/htz/*.csv');
+aux = {aux.name};
+
+predicaoHTZ = aux;
 
 config = menu('Escolha uma configuração de predição:', dadosPredicao);
 
-arquivoDadosPredicao = strcat('tests/config/', dadosPredicao{config}, '.m');
+arquivoDadosPredicao = strcat('tests/config/', dadosPredicao{config});
 
 config = menu('Escolha um conjunto de dados gerados pelo HTZ:', predicaoHTZ);
-arquivoDadosHTZ = strcat('tests/results/', predicaoHTZ{config}, '.csv');
+arquivoDadosHTZ = strcat('tests/results/htz/', predicaoHTZ{config});
 
 compara = utils.compara_HTZ(arquivoDadosPredicao, arquivoDadosHTZ);
 
