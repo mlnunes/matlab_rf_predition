@@ -5,7 +5,7 @@ classdef P1812 < model.PropagationBase
 
     methods
         
-        function calculo(obj, gAnt, p, pL, sigmaL)
+        function calculo(obj, gAnt, varargin) %p, pL, sigmaL)
             %--------------------------------------------------------------
             % Calcula o nivel de sinal recebido e a atenuação até a estação
             % de recepção
@@ -16,22 +16,36 @@ classdef P1812 < model.PropagationBase
             % sigmal:           Desvios padrão da variabilidade espacial calculados
             %                   utilizando o método stdDev.m, conforme descrito nos
             %                   itens 4.8 e 4.10 da recomendação 1812
+            % perfil_distancia: array (1,n) distancias dos obstaculos até o TX
+            % perfil_elevacao: array (1,n) elevações dos obstáculos
+            % perfil_clutter: array (1, n) classificação das feições do terreno
             %--------------------------------------------------------------
-            arguments
-                obj 
-                gAnt double
-                p = 1
-                pL = 50
-                %--------------------------------------------------------------
-                % Cálculo do sigma L segundo a eq. 64 da recomendação:
-                % sigmal = ((0.024*freq+0.52)*(resolução do mapa))^0.28
-                %--------------------------------------------------------------
-                sigmaL = ((24e-3 * (obj.siteTX.TransmitterFrequency/1e9) + 0.52) * (obj.R.CellExtentInLatitude * 111320))^(0.28)
-            end
+            
+            
+            ip = inputParser;
+            addRequired(ip, 'gAnt', @isnumeric);
+            addParameter(ip, 'p', 1, @isnumeric);
+            addParameter(ip, 'pL', 50, @isnumeric);
+            addParameter(ip, 'sigmaL', ((24e-3 * (obj.siteTX.TransmitterFrequency/1e9) + 0.52) ...
+                         * (obj.R.CellExtentInLatitude * 111320))^(0.28), @isnumeric);
+            addParameter(ip, 'perfil_distancia', []);
+            addParameter(ip, 'perfil_elevacao', []);
+            addParameter(ip, 'perfil_clutter', []);
+            parse(ip, gAnt, varargin{:});
+            
+            p = ip.Results.p;
+            pL = ip.Results.pL;
+            sigmaL =ip.Results.sigmaL;
+            perfil_distancia = ip.Results.perfil_distancia;
+            perfil_elevacao = ip.Results.perfil_elevacao;
+            perfil_clutter = ip.Results.perfil_clutter;
 
- 
             PTX = obj.siteTX.TransmitterPower / 1e3;
-            [perfil_distancia, perfil_elevacao, perfil_clutter] = utils.levanta_perfil(obj.siteTX, obj.siteRX, obj.A, obj.R, obj.C, obj.S);
+            
+            if (isempty(perfil_distancia))
+                [perfil_distancia, perfil_elevacao, perfil_clutter] = utils.levanta_perfil(obj.siteTX, obj.siteRX, obj.A, obj.R, obj.C, obj.S);
+            end
+            
             
             %--------------------------------------------------------------
             % calcula o array de alturas adicional conforme a classificação
