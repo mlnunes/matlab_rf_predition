@@ -83,7 +83,8 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
     
     %--------------------------------------------------------------------------
     % Cria variáveis de saída
-    Pwr_rx = -Inf * ones(size(A));
+    %Pwr_rx = -Inf * ones(size(A));
+    Pwr_rx = nan(size(A));
     Lb = Pwr_rx;
     
     %--------------------------------------------------------------------------
@@ -104,10 +105,16 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
 
     %----------------------------------------------------------------------
     % Calcula as células que compõem a borda da area de predição
-    raio_c = round(raio_m/((R.CellExtentInLatitude * 111320)));
-    tx_n = n;
-    tx_m = m;
-    borda = utils.calc_idxs_borda(tx_m, tx_n , raio_c);
+    % raio em número de células
+    raioC = round(raio_m/((R.CellExtentInLatitude * 111320)));
+    
+    % indices da celula que abriga a estação base
+    txN = n;
+    txM = m;
+
+    % matriz de indices únicos que descrevem um circulo de raio raioC em
+    % torno das célula A(txM, txN)
+    borda = utils.calc_idxs_borda(txM, txN , raioC);
 
 
     %--------------------------------------------------------------------------
@@ -139,7 +146,7 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
 
         %------------------------------------------------------------------
         % atualiza barra de status de execução
-        if ~(mod(i, 10))
+        if ~mod(i, 10)
             percent_exec = i /(size(borda,1));
             barExec.Message = sprintf('Executado: %.1f %%', (percent_exec * 100));
             barExec.Value = percent_exec;
@@ -231,32 +238,34 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
             
             %--------------------------------------------------------------
             % Verifica se a célula já foi computada anteriormente
-            if isinf(Lb(celulas_radial(k, 1), celulas_radial(k, 2)))
-                %----------------------------------------------------------
-                % Atualiza as coordenadas do ponto de RX
-                RX.Latitude = pontos_radial(k, 2);
-                RX.Longitude = pontos_radial(k, 1);
-
-                %----------------------------------------------------------
-                % Adapta os arrays de distancia, clutter e elevações para
-                % execução no modelo
-                [d, e, c] = utils.remove_sequencias(perfil_radial_ordenado(:, 1:k));
-                elevsiteRX = elevacoes_radial(k);
-                distanciaRX = distancias_radial(k)/1000;
-                clutterRX = clutter_radial(k);
-                d = [0, d/1000, distanciaRX];
-                e = [elevBase, e, elevsiteRX];
-                c = [clutBase, c, clutterRX];
-                              
-                %------------------------------------------------------------------
-                % calcula a atenuação e nível de sinal recebido
-                predicao.siteRX = RX;
-                calculo(predicao, gAnt(3, k), 'perfil_distancia', d, 'perfil_elevacao', e, ...
-                        'perfil_clutter', c);
-                Lb(celulas_radial(k, 1), celulas_radial(k, 2)) = predicao.Lb;
-                Pwr_rx(celulas_radial(k, 1), celulas_radial(k, 2)) = predicao.PRX; %executar a partir da linha 36 do P1812
-            
+            if ~isnan(Lb(celulas_radial(k, 1), celulas_radial(k, 2)))
+                continue
             end
+
+            %----------------------------------------------------------
+            % Atualiza as coordenadas do ponto de RX
+            RX.Latitude = pontos_radial(k, 2);
+            RX.Longitude = pontos_radial(k, 1);
+
+            %----------------------------------------------------------
+            % Adapta os arrays de distancia, clutter e elevações para
+            % execução no modelo
+            [d, e, c] = utils.remove_sequencias(perfil_radial_ordenado(:, 1:k));
+            elevsiteRX = elevacoes_radial(k);
+            distanciaRX = distancias_radial(k)/1000;
+            clutterRX = clutter_radial(k);
+            d = [0, d/1000, distanciaRX];
+            e = [elevBase, e, elevsiteRX];
+            c = [clutBase, c, clutterRX];
+                          
+            %------------------------------------------------------------------
+            % calcula a atenuação e nível de sinal recebido
+            predicao.siteRX = RX;
+            calculo(predicao, gAnt(3, k), 'perfil_distancia', d, 'perfil_elevacao', e, ...
+                    'perfil_clutter', c);
+            Lb(celulas_radial(k, 1), celulas_radial(k, 2)) = predicao.Lb;
+            Pwr_rx(celulas_radial(k, 1), celulas_radial(k, 2)) = predicao.PRX; %executar a partir da linha 36 do P1812
+        
             %--------------------------------------------------------------
             
         end
@@ -264,5 +273,15 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
 
 
     end
+    
+    %----------------------------------------------------------------------
+    % Interpola os valores não calculados à partir das células vizinhas
+    [M, N] = meshgrid(1:size(Lb, 2), 1:size(Lb, 1));
+    mascaraDentro = (M - txM).^2 + (N - txN).^2 < raioC^2;
+    Lb(find(~mascaraDentro)) = -Inf;
+    Lb = fillmissing(Lb, 'linear');
+    % Lb(Lb(find(mascaraDentro)) == Inf) = NaN;
+    %Lb =fillmissing(Lb, 'linear');
+
     close(barExec)
 end

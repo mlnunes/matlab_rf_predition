@@ -21,21 +21,30 @@ classdef P1812 < model.PropagationBase
             % perfil_clutter: array (1, n) classificação das feições do terreno
             %--------------------------------------------------------------
             
-            
+            arguments
+                obj 
+                gAnt double {mustBeNumeric, mustBeNonNan, mustBeNonempty}
+            end
+
+            arguments (Repeating)
+                varargin
+            end
+
+
             ip = inputParser;
-            addRequired(ip, 'gAnt', @isnumeric);
             addParameter(ip, 'p', 1, @isnumeric);
             addParameter(ip, 'pL', 50, @isnumeric);
             addParameter(ip, 'sigmaL', ((24e-3 * (obj.siteTX.TransmitterFrequency/1e9) + 0.52) ...
                          * (obj.R.CellExtentInLatitude * 111320))^(0.28), @isnumeric);
-            addParameter(ip, 'perfil_distancia', []);
-            addParameter(ip, 'perfil_elevacao', []);
-            addParameter(ip, 'perfil_clutter', []);
-            parse(ip, gAnt, varargin{:});
+            addParameter(ip, 'perfil_distancia', [], @isnumeric);
+            addParameter(ip, 'perfil_elevacao', [], @isnumeric);
+            addParameter(ip, 'perfil_clutter', [], @isnumeric);
+
+            parse(ip, varargin{:});
             
             p = ip.Results.p;
             pL = ip.Results.pL;
-            sigmaL =ip.Results.sigmaL;
+            sigmaL = ip.Results.sigmaL;
             perfil_distancia = ip.Results.perfil_distancia;
             perfil_elevacao = ip.Results.perfil_elevacao;
             perfil_clutter = ip.Results.perfil_clutter;
