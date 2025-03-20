@@ -2,7 +2,7 @@
 % arquivo de configuração
 
 %raio da predição em torno da base em metros
-raio = 4000;
+raio = 20000;
 
 aux = dir ('tests/config/');
 aux = {aux.name};

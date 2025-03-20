@@ -1,4 +1,4 @@
-function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
+function [lb, pwrRx] = predicao_area_radial(raio_m, fileData)
     %----------------------------------------------------------------------
     % Calcula a predição e cobertura de uma área
     %
@@ -28,9 +28,9 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
     %                       tiltMecanico: inclinação da antena
     %                       Tipo: ['isotropic', 'array']
     %
-    %   Lb: matriz de valores de atenuação calculada para cada célula do
+    %   lb: matriz de valores de atenuação calculada para cada célula do
     %       geotif da área de análise (dB)
-    %   Pwr_rx: matriz de valores de nível de sinal recebido calculado para
+    %   pwrRx: matriz de valores de nível de sinal recebido calculado para
     %           cada célula do geotif da área de análise
     %----------------------------------------------------------------------
    
@@ -83,9 +83,8 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
     
     %--------------------------------------------------------------------------
     % Cria variáveis de saída
-    %Pwr_rx = -Inf * ones(size(A));
-    Pwr_rx = nan(size(A));
-    Lb = Pwr_rx;
+    pwrRx = nan(size(A));
+    lb = pwrRx;
     
     %--------------------------------------------------------------------------
     % elevação da estação Base
@@ -104,7 +103,7 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
     
 
     %----------------------------------------------------------------------
-    % Calcula as células que compõem a borda da area de predição
+    % Calcula as células que compõem a borda da area de predição 
     % raio em número de células
     raioC = round(raio_m/((R.CellExtentInLatitude * 111320)));
     
@@ -112,10 +111,40 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
     txN = n;
     txM = m;
 
+    %----------------------------------------------------------------------
+    % Cria uma máscara para todas células que compõem a mancha
+    [M, N] = meshgrid(1:size(A, 2), 1:size(A, 1));
+    mascaraDentro = ((M + 2) - txM).^2 + ((N + 2) - txN).^2 <= raioC^2;
+
+
     % matriz de indices únicos que descrevem um circulo de raio raioC em
     % torno das célula A(txM, txN)
-    borda = utils.calc_idxs_borda(txM, txN , raioC);
+    mascaraBorda = ((M + 2) - txM).^2 + ((N + 2) - txN).^2 <= (raioC - 1)^2;
+    [borda(:,2), borda(:,1)] =find(mascaraDentro - mascaraBorda); 
 
+
+    %----------------------------------------------------------------------
+    % calcula a distancia de todas as células até o centro da borda
+    [matriz_distancias_dentro(:,1), matriz_distancias_dentro(:,2)]  = find(mascaraDentro);
+
+    matriz_distancias_dentro(:, 3) = sqrt(...
+        ( ...
+            (matriz_distancias_dentro(:, 1) - txN) ...
+                * R.CellExtentInLatitude ...
+        ).^2 + ...
+        ( ...
+            (matriz_distancias_dentro(:, 2) - txM) ...
+                * R.CellExtentInLongitude ...
+        ).^2 ...
+        ) * 111320;
+
+
+    matriz_distancias = zeros(size(A));
+
+
+    for ii = 1:size(matriz_distancias_dentro, 1)
+        matriz_distancias(matriz_distancias_dentro(ii, 1), matriz_distancias_dentro(ii, 2)) = matriz_distancias_dentro(ii, 3);
+    end
 
     %--------------------------------------------------------------------------
     % Incializa a variavel RX instanciando a classe rxsite() preparando
@@ -159,7 +188,7 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
 
         %------------------------------------------------------------------
         % encontra distancia, azimute da radial
-        [~, azimuteRadial] = utils.Propagation.Distance(base, RX, "m"); 
+        [~, azimuteRadial] = utils.Propagation.Distance(base, RX, "m"); %levar para fora do loop e criar matriz indexada
         
         %------------------------------------------------------------------
         % Levanta o perfil e clutter da radial
@@ -173,9 +202,36 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
         celulas_radial(:, 2) = aux';
 
         %------------------------------------------------------------------
-        % Remove células/pontos repetidas
-        [celulas_radial, idxs] = unique(celulas_radial, "rows");
+        % Remove células repetidas
+        [celulas_radial, idxs] = unique(celulas_radial, "stable", "rows");
+
+        %------------------------------------------------------------------
+        % Exclui as células onde está a base se ocorrer
+        celulas_radial = celulas_radial( ~((celulas_radial(:, 1) == txN) & (celulas_radial(:, 2) == txM)), :);
+       
+        
+        %------------------------------------------------------------------
+        % Exclui as células além do raio da predição
+        mascara1 = arrayfun(@(idx) mascaraDentro(celulas_radial(idx, 1), ...
+            celulas_radial(idx, 2)), 1:size(celulas_radial, 1))';
+        celulas_radial = celulas_radial(mascara1, :);
+
+
+        %------------------------------------------------------------------
+        % corrrige o número de indices
+        
+        idxs = idxs(numel(idxs) - size(celulas_radial, 1) + 1 : end);
+
+        %-----------------------------------------------------------------
+        % Remove pontos repetidos
         pontos_radial = pontos_radial(idxs, :);
+
+
+        %------------------------------------------------------------------
+        % cria a tabela pareada de ponto em coordenadsa utm
+
+        
+        
 
 
         % armazena a elevação e clutter das células da radial
@@ -185,14 +241,14 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
 
         clutter_radial = (arrayfun(@(fix)C(celulas_radial(fix, 1), ...
                          celulas_radial(fix, 2)), ...
-                         1:size(celulas_radial,1)))'; 
+                         1:size(celulas_radial,1)))';
 
 
         % levanta as distâncias das células da radial até a estação base
-        distancias_radial = (arrayfun(@(idx) distance(...
-                            base.Latitude, base.Longitude, ...
-                            pontos_radial(idx, 2), pontos_radial(idx, 1), ...
-                            wgs84), 1:size(celulas_radial, 1)))';
+        distancias_radial = (arrayfun(@(fix)matriz_distancias(celulas_radial(fix, 1), ...
+                         celulas_radial(fix, 2)), ...
+                         1:size(celulas_radial,1)))';
+
 
         % ordena os arrays
         perfil_radial_ordenado = utils.ordena_perfil(distancias_radial', ...
@@ -234,11 +290,11 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
         %------------------------------------------------------------------
         % iniciar o loop sobre as celulas_radial passando o perfil,
         % clutter e distancia para calculo(predicao, gAnt)
+        
         for k = 1:size(celulas_radial,1)
-            
             %--------------------------------------------------------------
             % Verifica se a célula já foi computada anteriormente
-            if ~isnan(Lb(celulas_radial(k, 1), celulas_radial(k, 2)))
+            if ~isnan(lb(celulas_radial(k, 1), celulas_radial(k, 2)))
                 continue
             end
 
@@ -263,8 +319,8 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
             predicao.siteRX = RX;
             calculo(predicao, gAnt(3, k), 'perfil_distancia', d, 'perfil_elevacao', e, ...
                     'perfil_clutter', c);
-            Lb(celulas_radial(k, 1), celulas_radial(k, 2)) = predicao.Lb;
-            Pwr_rx(celulas_radial(k, 1), celulas_radial(k, 2)) = predicao.PRX; %executar a partir da linha 36 do P1812
+            lb(celulas_radial(k, 1), celulas_radial(k, 2)) = predicao.Lb;
+            pwrRx(celulas_radial(k, 1), celulas_radial(k, 2)) = predicao.PRX; %executar a partir da linha 36 do P1812
         
             %--------------------------------------------------------------
             
@@ -276,12 +332,10 @@ function [Lb, Pwr_rx] = predicao_area_radial(raio_m, fileData)
     
     %----------------------------------------------------------------------
     % Interpola os valores não calculados à partir das células vizinhas
-    [M, N] = meshgrid(1:size(Lb, 2), 1:size(Lb, 1));
-    mascaraDentro = (M - txM).^2 + (N - txN).^2 < raioC^2;
-    Lb(find(~mascaraDentro)) = -Inf;
-    Lb = fillmissing(Lb, 'linear');
-    % Lb(Lb(find(mascaraDentro)) == Inf) = NaN;
-    %Lb =fillmissing(Lb, 'linear');
-
+    idxs_fora = find(~mascaraDentro);
+    lb(idxs_fora) = -Inf;
+    pwrRX(idxs_fora) = -Inf;
+    lb = fillmissing(lb, 'linear');
+    pwrRX = fillmissing(pwrRX, 'linear');
     close(barExec)
 end

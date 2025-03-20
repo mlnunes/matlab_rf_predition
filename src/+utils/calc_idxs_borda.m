@@ -13,7 +13,7 @@ function borda = calc_idxs_borda(tx_m, tx_n, raio)
     %----------------------------------------------------------------------
     % Percorre os valores de x dentro do círculo
     
-    for x = (tx_m - raio):0.05:(tx_m + raio) 
+    for x = (tx_m - raio):(tx_m + raio) 
         %------------------------------------------------------------------
         % Calcula o termo da equação do círculo
 
@@ -28,9 +28,8 @@ function borda = calc_idxs_borda(tx_m, tx_n, raio)
             %--------------------------------------------------------------
             % Adiciona os pontos na borda do círculo
 
-            x_offset = round(x);
-            borda = [borda; x_offset, tx_n + y_offset]; % Parte superior
-            borda = [borda; x_offset, tx_n - y_offset]; % Parte inferior
+            borda = [borda; x, tx_n + y_offset]; % Parte superior
+            borda = [borda; x, tx_n - y_offset]; % Parte inferior
             
         end
         %------------------------------------------------------------------
