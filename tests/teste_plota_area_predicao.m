@@ -16,12 +16,26 @@ end
 graf = {'Atenuação', 'Nível de sinal', 'Não'};
 grafico = menu('Deseja ver o gráfico do resultado?', graf);
 
-if grafico == 1
-    utils.plota_predicao(arquivoConfig, lb, graf{grafico})
+if grafico < 3
+    dimensoes = menu('Qual visualização?', {'2D', '3D'});
 
-elseif grafico == 2
-    utils.plota_predicao(arquivoConfig, prx, graf{grafico})
+    if dimensoes == 1
+    
+        if grafico == 1
+            utils.plota_predicao(arquivoConfig, lb, graf{grafico})
+        
+        elseif grafico == 2
+            utils.plota_predicao(arquivoConfig, prx, graf{grafico})
+        end
+    else
+        if grafico == 1
+            utils.plota_predicao3D(arquivoConfig, lb, graf{grafico})
+        
+        elseif grafico == 2
+            utils.plota_predicao3D(arquivoConfig, prx, graf{grafico})
+        end
 
+    end
 end
 
 clear arquivoConfig;

@@ -5,7 +5,7 @@ classdef P1812 < model.PropagationBase
 
     methods
         
-        function calculo(obj, gAnt, varargin) %p, pL, sigmaL)
+        function calculo(obj, gAnt, varargin)
             %--------------------------------------------------------------
             % Calcula o nivel de sinal recebido e a atenuação até a estação
             % de recepção

@@ -5,15 +5,21 @@ classdef Hata < model.PropagationBase
 
     methods
 
-        function calculo(obj, gAnt)
+        function calculo(obj, gAnt, varargin)
             %--------------------------------------------------------------
             % Calcula o nivel de sinal recebido e a atenuação até a estação
             % de recepção
             % gAnt: ganho da antena
+            % varargin: argumento não processado inserido apenas para
+            %           compatibilidade
             %--------------------------------------------------------------
             arguments
                 obj 
                 gAnt double
+            end
+
+            arguments (Repeating)
+                varargin
             end
             
             PTX = log10(obj.siteTX.TransmitterPower/1e-3);
