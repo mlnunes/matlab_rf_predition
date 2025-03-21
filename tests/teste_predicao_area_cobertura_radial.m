@@ -4,7 +4,7 @@
 %raio da predição em torno da base em metros (valor default)
 raio = 4800;
 
-aux = dir ('tests/config/');
+aux = dir (strcat(pwd, '/tests/config/'));
 aux = {aux.name};
 
 arquivos = aux(3:end);
@@ -14,14 +14,14 @@ arquivos = aux(3:end);
 
 config = menu('Escolha uma configuração para rodar a predição:', arquivos);
 
-arquivoConfig = strcat('tests/config/', arquivos{config});
+arquivoConfig = strcat(pwd, '/tests/config/', arquivos{config});
 
 
 %--------------------------------------------------------------------------
 % Caixa de diálogo para entrar com o raio da predição
 raio_user = inputdlg({'Entre com raio da cobertura (m):'}, ...
                      "Raio", ...
-                     [1, 50], ...
+                     [1, 50], ... 
                      {int2str(raio)});
 
 %--------------------------------------------------------------------------
@@ -35,20 +35,11 @@ if ~isempty(raio_user)
       %--------------------------------------------------------------------
       % Executa o cálculo de predição com o parâmetros selecionados  
       [lb, prx] = utils.predicao_area_radial(raio, arquivoConfig);
-
-        %------------------------------------------------------------------
-        % Caixa de diálogo para plotar o resultado
-        graf = {'Atenuação', 'Nível de sinal', 'Não'};
-        grafico = menu('Deseja ver o gráfico do resultado?', graf);
-        
-        if grafico == 1
-            utils.plota_predicao(arquivoConfig, lb, graf{grafico})
-        
-        elseif grafico == 2
-            utils.plota_predicao(arquivoConfig, prx, graf{grafico})
-        
-        end
-        %------------------------------------------------------------------
+      %------------------------------------------------------------------
+      % Caixa de diálogo para plotar o resultado
+      run tests/teste_plota_area_predicao.m;
+    
+      %------------------------------------------------------------------
 
     end
     %----------------------------------------------------------------------  

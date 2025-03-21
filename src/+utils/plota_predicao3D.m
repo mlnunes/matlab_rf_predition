@@ -1,4 +1,4 @@
-function plota_predicao(fileData, Z, tipoZ)
+function plota_predicao3D(fileData, Z, tipoZ)
     %----------------------------------------------------------------------
     % Plota o mapa da mancha de prediçao
     %   fileData: arquivo que contém a estrutura com parâmetros da predição
@@ -10,6 +10,8 @@ function plota_predicao(fileData, Z, tipoZ)
         Z (:, :) double
         tipoZ string
     end
+
+    dir_app = '/home/mlnunes/Documentos/dev/matlab/propagação';
     
     %----------------------------------------------------------------------
     % Carrega os parâmetros utilizados para realizar a predição
@@ -30,7 +32,7 @@ function plota_predicao(fileData, Z, tipoZ)
     %----------------------------------------------------------------------
     % Caracteristicas da area
     % Carrega dados do relevo
-    [A, R] = utils.loadRaster(dadosPredicao.dadosRelevo, true);
+    [A, R] = utils.loadRaster(fullfile(dir_app, dadosPredicao.dadosRelevo), true);
     
     %--------------------------------------------------------------------------
     % elevação da estação Base
@@ -41,7 +43,7 @@ function plota_predicao(fileData, Z, tipoZ)
             linspace(R.LongitudeLimits(1), R.LongitudeLimits(2), size(A, 1)));
 
     figure
-    %axesm('MapProjection','mercator','MapLatLimit',R.LatitudeLimits+[-1 1])
+    set(gcf, 'Name', 'Predição de Cobertura', 'NumberTitle', 'off');
     s = surf(lon, lat, A, Z, 'EdgeColor', 'none');
     hold on;
     geoshow(base.Latitude,base.Longitude,DisplayType="point",ZData=elevBase + base.AntennaHeight, ...
@@ -53,12 +55,6 @@ function plota_predicao(fileData, Z, tipoZ)
     title (sprintf('Dados de Cobertura (%s) da estação %s\nModelo: %s', tipoZ, dadosPredicao.Base.Nome, modelo));
 
 
-    % axesm('MapProjection','mercator','MapLatLimit',R.LatitudeLimits+[-1 1])
-    % geoshow(Z, R, DisplayType="texturemap")
-    % geoshow(base.Latitude,base.Longitude,DisplayType="point",ZData=elevBase, ...
-    %     MarkerEdgeColor="k",MarkerFaceColor="c",MarkerSize=10,Marker="o")
-    % title (sprintf('Dados de Cobertura (%s) da estação %s\nModelo: %s', tipoZ, dadosPredicao.Base.Nome, modelo));
-    
     % cria um colormap do branco->amarelo->vermelho 
     cmap = zeros(256, 3);
     cmap(1:128, 1:2) = repmat([1 1], 128, 1);
@@ -71,7 +67,7 @@ function plota_predicao(fileData, Z, tipoZ)
   
     text1 = dadosPredicao.Base.Nome;
     delta = 0.0025;
-    %textm(base.Latitude+delta,base.Longitude+delta,text1)
+
     cb = colorbar;
     cb.Label.String = tipoZ;
 end

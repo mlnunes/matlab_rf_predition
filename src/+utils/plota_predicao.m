@@ -11,6 +11,8 @@ function plota_predicao(fileData, Z, tipoZ)
         tipoZ string
     end
     
+    dir_app = '/home/mlnunes/Documentos/dev/matlab/propagação';
+
     %----------------------------------------------------------------------
     % Carrega os parâmetros utilizados para realizar a predição
     run(fileData);
@@ -30,7 +32,7 @@ function plota_predicao(fileData, Z, tipoZ)
     %----------------------------------------------------------------------
     % Caracteristicas da area
     % Carrega dados do relevo
-    [A, R] = utils.loadRaster(dadosPredicao.dadosRelevo, true);
+    [A, R] = utils.loadRaster(fullfile(dir_app, dadosPredicao.dadosRelevo), true);
     
     %--------------------------------------------------------------------------
     % elevação da estação Base
@@ -38,6 +40,7 @@ function plota_predicao(fileData, Z, tipoZ)
     elevBase = A(n, m);
 
     figure
+    set(gcf, 'Name', 'Predição de Cobertura', 'NumberTitle', 'off');
     axesm('MapProjection','mercator','MapLatLimit',R.LatitudeLimits+[-1 1])
     geoshow(Z, R, DisplayType="texturemap")
     geoshow(base.Latitude,base.Longitude,DisplayType="point",ZData=elevBase, ...
