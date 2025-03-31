@@ -37,7 +37,7 @@ function plot_perfil(fileData, latRX, lonRX)
     
     % Carrega os dados da antena
     antenaBase = utils.readAntennaData(dadosPredicao.Base.Antena.ArquivoDados, dadosPredicao.Base.Antena.Modelo,...
-            dadosPredicao.Base.Antena.Funcao, dadosPredicao.Base.Antena.Azimute, dadosPredicao.Base.Antena.tiltMecanico);
+        dadosPredicao.Base.Antena.Funcao, dadosPredicao.Base.Antena.Azimute, dadosPredicao.Base.Antena.tiltMecanico);
 
     %----------------------------------------------------------------------
     % Caracteristicas da area

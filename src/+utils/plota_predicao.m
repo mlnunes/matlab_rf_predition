@@ -11,7 +11,7 @@ function plota_predicao(fileData, Z, tipoZ)
         tipoZ string
     end
     
-    dir_app = '/home/mlnunes/Documentos/dev/matlab/propagação';
+    dir_app = 'C:\Users\mlnunes\Documents\matlab_rf_predition';
 
     %----------------------------------------------------------------------
     % Carrega os parâmetros utilizados para realizar a predição

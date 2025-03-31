@@ -11,7 +11,7 @@ function plota_predicao3D(fileData, Z, tipoZ)
         tipoZ string
     end
 
-    dir_app = '/home/mlnunes/Documentos/dev/matlab/propagação';
+    dir_app = 'C:\Users\mlnunes\Documents\matlab_rf_predition';
     
     %----------------------------------------------------------------------
     % Carrega os parâmetros utilizados para realizar a predição
@@ -46,8 +46,10 @@ function plota_predicao3D(fileData, Z, tipoZ)
     set(gcf, 'Name', 'Predição de Cobertura', 'NumberTitle', 'off');
     s = surf(lon, lat, A, Z, 'EdgeColor', 'none');
     hold on;
-    geoshow(base.Latitude,base.Longitude,DisplayType="point",ZData=elevBase + base.AntennaHeight, ...
-        MarkerEdgeColor="k",MarkerFaceColor="c",MarkerSize=5,Marker="o")
+    % geoshow(base.Latitude,base.Longitude,DisplayType="point",ZData=elevBase + base.AntennaHeight, ...
+    %      MarkerEdgeColor="k",MarkerFaceColor="c",MarkerSize=5,Marker="o")
+
+    stem3(base.Longitude,base.Latitude, base.AntennaHeight + elevBase, 'filled', 'BaseValue', elevBase, 'LineWidth', 2, 'Color', 'k');
     
     view(3)
     light("Position", [base.Latitude base.Longitude elevBase+base.AntennaHeight]);

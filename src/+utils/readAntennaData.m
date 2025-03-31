@@ -1,76 +1,101 @@
-function antenaObj = readAntennaData(filename, Nome, Tipo, Azimute, Tilt_mec)
-    %----------------------------------------------------------
-    % Carrega a função parse para cada extensão de arquivo de 
-    % definição de características de antena e retorna um objeto
-    % da classe utils/antena
-    %
-    % filename: arquivo de dados da antena
-    % Nome: nome ou modelo da antena
-    % Tipo: uso como 'TX' ou 'RX'
-    % Azimute: azimute da antena (GMS)
-    % Tilt_mec: valor da inclinação mecânica (+90° a -90°) GMS
-    %
-    %-----------------------------------------------------------
+function antenaObj = readAntennaData(antennaInfo, Nome, Tipo, Azimute, Tilt_mec)
+%----------------------------------------------------------
+% Carrega a função parse para cada extensão de arquivo de
+% definição de características de antena e retorna um objeto
+% da classe utils/antena
+%
+% antennaInfo: arquivo de dados da antena
+% Nome: nome ou modelo da antena
+% Tipo: uso como 'TX' ou 'RX'
+% Azimute: azimute da antena (GMS)
+% Tilt_mec: valor da inclinação mecânica (+90° a -90°) GMS
+%
+%-----------------------------------------------------------
 
-    arguments
+arguments
 
-        filename
-        Nome char
-        Tipo char {mustBeMember(Tipo, {'TX', 'RX'})} = 'TX'
-        Azimute double {mustBeInRange(Azimute,0,360,"exclude-upper")} = 0.0
-        Tilt_mec double {mustBeInRange(Tilt_mec,-90, 90)} = 0.0
-   
+    antennaInfo
+    Nome char
+    Tipo char {mustBeMember(Tipo, {'TX', 'RX'})} = 'TX'
+    Azimute double {mustBeInRange(Azimute,0,360,"exclude-upper")} = 0.0
+    Tilt_mec double {mustBeInRange(Tilt_mec,-90, 90)} = 0.0
+
+end
+
+%-------------------------------------------------------------
+% instancia um objeto utils.antena e carrega as propriedades
+% informadas pelos argumentos da função
+
+antenaObj = utils.antena(Nome, Tipo, Azimute, Tilt_mec);
+
+%----------------------------------------------------------------------
+% verifica se filename é um arquivo válido
+
+%----------------------------------------------------------------------
+% verifica se antennaInfo é uma estrutura
+if isstruct(antennaInfo)
+
+    antenaObj.Ganho = antennaInfo.ganho;
+
+    if isempty(antennaInfo.ganhoV)
+        antenaObj.V_ganho = [(0:359)', zeros(360,1)];
+    else
+        antenaObj.V_ganho = antennaInfo.ganhoV;
     end
 
-    %-------------------------------------------------------------
-    % instancia um objeto utils.antena e carrega as propriedades
-    % informadas pelos argumentos da função
-    
-    antenaObj = utils.antena(Nome, Tipo, Azimute, Tilt_mec);
+    if isempty(antennaInfo.ganhoH)
+        antenaObj.H_ganho = [(0:359)', zeros(360,1)];
+    else
+        antenaObj.H_ganho = antennaInfo.ganhoH;
+    end
 
-    if isfile(filename)
+else
+    try
         %--------------------------------------------------------------
         % verfica se o arquivo de dados da antena é do tipo .msi
-    
-        if endsWith(filename, '.msi')
+
+        if endsWith(antennaInfo, '.msi')
             %----------------------------------------------------------
             % carrega o arquivo
-        
-            antenaData = utils.getMsiData(filename);
-            
+
+            antenaData = utils.getMsiData(antennaInfo);
+
             %----------------------------------------------------------
             % parse dos dados
             antenaObj.Ganho = antenaData.Data(2);
-    
+
             % Verifica o número de amostra de ganho horizontal
             nAmostrasH = antenaData.Data(5);
-    
+
             % carrega o array de ganhos horizontais
             ganhoH = zeros(nAmostrasH ,2);
             ganhoH(:, 1) = antenaData.NAME(6: nAmostrasH + 5);
-    
+
             ganhoH(:, 2) = antenaData.Data(6: nAmostrasH + 5);
             antenaObj.H_ganho = double(ganhoH);
-    
+
             % carrega o array de ganhos vertiais
             nAmostrasV = antenaData.Data(nAmostrasH + 6);
             ganhoV = zeros(nAmostrasV, 2);
-            
+
             ganhoV(:, 1) = antenaData.NAME(nAmostrasH + 7 : nAmostrasV + nAmostrasH + 6);
-            
+
             ganhoV(:, 2) = antenaData.Data(nAmostrasH + 7 : nAmostrasV + nAmostrasH + 6);
             antenaObj.V_ganho = double(ganhoV);
-    
+
         else
-            error("Pendente de implementação")
-    
+            warning("Pendente de implementação")
+
         end
-    
-    else
+    catch
+        %----------------------------------------------------------------------
+        % se não foi informado o padrão da antena retorna um padrão sem ganhos
         % Valor padrão para o caso de não carregar o arquivo da antena
         antenaObj.Ganho = 0;
         antenaObj.H_ganho = [(0:359)', zeros(360,1)];
         antenaObj.V_ganho = antenaObj.H_ganho;
+   
+
     end
-    
+
 end
