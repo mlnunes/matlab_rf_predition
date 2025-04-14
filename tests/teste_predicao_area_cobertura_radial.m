@@ -1,10 +1,17 @@
 % Realiza a predição de cobertura de uma área a partir da escolha de um
 % arquivo de configuração
 
+
 %raio da predição em torno da base em metros (valor default)
 raio = 4800;
 
-aux = dir (strcat(pwd, '/tests/config/'));
+if isunix
+    bar = '/';
+else
+    bar = '\';
+end
+
+aux = dir (strcat(pwd, bar, 'tests', bar, 'config', bar));
 aux = {aux.name};
 
 arquivos = aux(3:end);
@@ -14,7 +21,9 @@ arquivos = aux(3:end);
 
 config = menu('Escolha uma configuração para rodar a predição:', arquivos);
 
-arquivoConfig = strcat(pwd, '/tests/config/', arquivos{config});
+arquivoConfig = strcat(pwd, bar, 'tests', bar, 'config', bar, arquivos{config});
+
+run(arquivoConfig);
 
 
 %--------------------------------------------------------------------------
@@ -34,7 +43,7 @@ if ~isempty(raio_user)
 
       %--------------------------------------------------------------------
       % Executa o cálculo de predição com o parâmetros selecionados  
-      [lb, prx] = utils.predicao_area_radial(raio, arquivoConfig);
+      [lb, prx] = utils.predicao_area_radial(raio, dadosPredicao);
       %------------------------------------------------------------------
       % Caixa de diálogo para plotar o resultado
       run tests/teste_plota_area_predicao.m;

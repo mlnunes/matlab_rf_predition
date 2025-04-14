@@ -1,8 +1,8 @@
-function [lb, pwrRx] = predicao_area_radial(raio_m, fileData)
+function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao)
     %----------------------------------------------------------------------
     % Calcula a predição e cobertura de uma área
     %
-    % fileData: arquivo que contém a estrutura com parâmetros da predição
+    % 
     %       dadosPredicao: nome da struct
     %               modelo de predição: ['Hata', 'P.1812']
     %               frequencia: frequência da análise (Hz)
@@ -36,12 +36,12 @@ function [lb, pwrRx] = predicao_area_radial(raio_m, fileData)
    
     arguments
         raio_m  
-        fileData {mustBeFile}
+        dadosPredicao struct {mustBeNonempty}
     end
     
     %----------------------------------------------------------------------
     % Carrega os parâmetros utilizados para realizar a predição
-    run(fileData);
+    %run(fileData);
 
     modelo = dadosPredicao.modeloPredicao;
 
@@ -64,6 +64,7 @@ function [lb, pwrRx] = predicao_area_radial(raio_m, fileData)
     % Caracteristicas da area
     % Carrega dados do relevo
     [A, R] = utils.loadRaster(dadosPredicao.dadosRelevo, true);
+    [A, R] = utils.resizeGeotiff(A, R);
 
     %--------------------------------------------------------------------------
     % Carrega dados do clutter, se não houver arqivo de clutter uma matriz
@@ -71,6 +72,7 @@ function [lb, pwrRx] = predicao_area_radial(raio_m, fileData)
     if ~isempty(dadosPredicao.dadosClutter)
     
         [C, S] = utils.read_clutter(dadosPredicao.dadosClutter);
+        [C, S] = utils.resizeGeotiff(C, S);
     
     else
        
@@ -85,6 +87,7 @@ function [lb, pwrRx] = predicao_area_radial(raio_m, fileData)
     % Cria variáveis de saída
     pwrRx = nan(size(A));
     lb = pwrRx;
+    ganhosAnt = lb;
     
     %--------------------------------------------------------------------------
     % elevação da estação Base
@@ -160,6 +163,9 @@ function [lb, pwrRx] = predicao_area_radial(raio_m, fileData)
         case 'P.1812'
            predicao = model.P1812(base, RX, A, R, C, S);
 
+        case 'P.526'
+           predicao = model.P526(base, RX, A, R, C, S);
+
         otherwise
             error("Modelo não implementado");
     end
@@ -175,7 +181,7 @@ function [lb, pwrRx] = predicao_area_radial(raio_m, fileData)
 
         %------------------------------------------------------------------
         % atualiza barra de status de execução
-        if ~mod(i, 10)
+        if ~mod(i, 1)
             percent_exec = i /(size(borda,1));
             barExec.Message = sprintf('Executado: %.1f %%', (percent_exec * 100));
             barExec.Value = percent_exec;
@@ -185,6 +191,7 @@ function [lb, pwrRx] = predicao_area_radial(raio_m, fileData)
         % Atualiza o ponto externo da radial
         RX.Latitude = R.intrinsicYToLatitude(borda(i, 2));
         RX.Longitude = R.intrinsicXToLongitude(borda(i, 1));
+        RX.AntennaHeight = dadosPredicao.Movel.Antena.Altura;
 
         %------------------------------------------------------------------
         % encontra distancia, azimute da radial
@@ -254,6 +261,8 @@ function [lb, pwrRx] = predicao_area_radial(raio_m, fileData)
         perfil_radial_ordenado = utils.ordena_perfil(distancias_radial', ...
                                                      elevacoes_radial', ...
                                                      clutter_radial');
+
+        perfil_radial_ordenado = double(perfil_radial_ordenado);
         
         celulas_radial_ordenadas = utils.ordena_perfil(distancias_radial', ...
                                                        celulas_radial(:,1)', ...
@@ -321,7 +330,8 @@ function [lb, pwrRx] = predicao_area_radial(raio_m, fileData)
                     'perfil_clutter', c);
             lb(celulas_radial(k, 1), celulas_radial(k, 2)) = predicao.Lb;
             pwrRx(celulas_radial(k, 1), celulas_radial(k, 2)) = predicao.PRX; %executar a partir da linha 36 do P1812
-        
+            ganhosAnt(celulas_radial(k, 1), celulas_radial(k, 2)) = gAnt(3, k);
+
             %--------------------------------------------------------------
             
         end
@@ -337,5 +347,6 @@ function [lb, pwrRx] = predicao_area_radial(raio_m, fileData)
     pwrRX(idxs_fora) = -Inf;
     lb = fillmissing(lb, 'linear');
     pwrRX = fillmissing(pwrRX, 'linear');
+    ganhosAnt = fillmissing(ganhosAnt, 'linear');
     close(barExec)
 end

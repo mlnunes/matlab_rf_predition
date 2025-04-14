@@ -1,4 +1,4 @@
-function plota_predicao(fileData, Z, tipoZ)
+function plota_predicao(dadosPredicao, Z, tipoZ)
     %----------------------------------------------------------------------
     % Plota o mapa da mancha de prediçao
     %   fileData: arquivo que contém a estrutura com parâmetros da predição
@@ -6,16 +6,21 @@ function plota_predicao(fileData, Z, tipoZ)
     %   tipoZ: nome variável que Z representa, p.ex: Atenuação
     %----------------------------------------------------------------------
     arguments
-        fileData {mustBeFile}
+        dadosPredicao struct {mustBeNonempty}
         Z (:, :) double
         tipoZ string
     end
     
-    dir_app = '/home/mlnunes/Documentos/dev/matlab/propagação';
+    
+    if isunix
+        dir_app = '/home/mlnunes/Documentos/dev/matlab/propagação';
+    else
+        dir_app = 'C:\Users\mlnunes\Documents\matlab_rf_predition';
+    end
 
     %----------------------------------------------------------------------
     % Carrega os parâmetros utilizados para realizar a predição
-    run(fileData);
+    %run(fileData);
 
     modelo = dadosPredicao.modeloPredicao;
 
@@ -33,6 +38,7 @@ function plota_predicao(fileData, Z, tipoZ)
     % Caracteristicas da area
     % Carrega dados do relevo
     [A, R] = utils.loadRaster(fullfile(dir_app, dadosPredicao.dadosRelevo), true);
+    [A, R] = utils.resizeGeotiff(A, R);
     
     %--------------------------------------------------------------------------
     % elevação da estação Base
