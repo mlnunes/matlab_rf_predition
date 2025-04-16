@@ -7,7 +7,7 @@ function [M, O] = loadRaster(filename, convertToDouble)
         convertToDouble logical = false
     end
 
-    [M, O] = readgeoraster(filename);
+    [M, O] = readgeoraster(filename, "CoordinateSystemType", 'geographic');
     if isa(O, 'map.rasterref.GeographicPostingsReference')
         O = georefcells(O.LatitudeLimits, O.LongitudeLimits, O.RasterSize);
     end

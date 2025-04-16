@@ -171,7 +171,7 @@ lBull = dl_bull(d, g, hts, hrs, Re, f);
 %--------------------------------------------------------------------------
 % The field strength exceeded for p% time and pL% locations
 
-Ep = 199.36+ 20*log10(f) - Lb; % eq (70)
+Ep = 199.36 + 20*log10(f) - Lb; % eq (70)
 
 % % Scale to the transmitter power
 

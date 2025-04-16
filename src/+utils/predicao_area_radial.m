@@ -172,7 +172,8 @@ function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao)
 
     %--------------------------------------------------------------------------
     % Cria barra de progresso
-    barExec = uiprogressdlg(uifigure);
+    barExecFig = uifigure;
+    barExec = uiprogressdlg(barExecFig);
     
     %--------------------------------------------------------------------------
     % Loop de execução
@@ -349,4 +350,5 @@ function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao)
     pwrRX = fillmissing(pwrRX, 'linear');
     ganhosAnt = fillmissing(ganhosAnt, 'linear');
     close(barExec)
+    close(barExecFig)
 end
