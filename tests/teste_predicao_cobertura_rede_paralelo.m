@@ -1,9 +1,10 @@
 % Realiza a predição de cobertura de uma área a partir de um arquivo de
 % configuração de uma rede SMP
-
+%--------------------------------------------------------------------------
 %raio da predição em torno da base em metros (valor default)
 raio = 1000;
 
+%--------------------------------------------------------------------------
 if isunix
     bar = '/';
 else
@@ -12,10 +13,6 @@ end
 
 aux = dir (strcat(pwd, bar, 'tests', bar, 'data', bar, "*.csv"));
 arquivos = {aux.name};
-
-%arquivos = aux(3:end);
-
-%configRede = readtable("tests/data/Nextim_5G_MT 1.csv", "VariableNamingRule", "preserve");
 
 %--------------------------------------------------------------------------
 % Caixa de diálogo para selecionar tos os arquivos da pasta ./tests/config
@@ -125,22 +122,18 @@ if ~isempty(raio_user)
 
             end
             %--------------------------------------------------------------
-            % Atualiza acumuladores fora do spmd (acessa posição 1 dos composite)
-            %lb_rede((lb_reduzido{1} < lb_rede) & ~isinf(lb_reduzido{1})) = lb_reduzido{1}((lb_reduzido{1} < lb_rede) & ~isinf(lb_reduzido{1}));
-            %prx_rede((prx_reduzido{1} > prx_rede) & ~isinf(prx_reduzido{1})) = prx_reduzido{1}((prx_reduzido{1} > prx_rede) & ~isinf(prx_reduzido{1}));
 
-            % Libera memória
-            %clear lb_reduzido prx_reduzido
         end
-
         %------------------------------------------------------------------
-        % Caixa de diálogo para plotar o resultado
+        % salva os resultados de saída
         lb_rede(isinf(lb_rede)) = -inf;
         lb = lb_rede;
         prx = prx_rede;
+
+        %------------------------------------------------------------------
+        % Caixa de diálogo para plotar o resultado
         disp('Simulação concluída')
         run tests/teste_plota_area_predicao.m;
-        %------------------------------------------------------------------
 
     end
     %----------------------------------------------------------------------

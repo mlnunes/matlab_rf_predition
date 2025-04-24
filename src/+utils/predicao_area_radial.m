@@ -1,4 +1,4 @@
-function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao)
+function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao, A , R)
     %----------------------------------------------------------------------
     % Calcula a predição e cobertura de uma área
     %
@@ -37,6 +37,8 @@ function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao)
     arguments
         raio_m  
         dadosPredicao struct {mustBeNonempty}
+        A = []
+        R = []
     end
     
     %----------------------------------------------------------------------
@@ -63,23 +65,25 @@ function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao)
     %----------------------------------------------------------------------
     % Caracteristicas da area
     % Carrega dados do relevo
-    [A, R] = utils.loadRaster(dadosPredicao.dadosRelevo, true);
-    [A, R] = utils.resizeGeotiff(A, R);
+    if isempty(A) || isempty(R)
+        [A, R] = utils.loadRaster(dadosPredicao.dadosRelevo, true);
+        [A, R] = utils.resizeGeotiff(A, R);
+    end
 
     %--------------------------------------------------------------------------
     % Carrega dados do clutter, se não houver arqivo de clutter uma matriz
     % default com representação área aberta/rural
-    if ~isempty(dadosPredicao.dadosClutter)
-    
-        [C, S] = utils.read_clutter(dadosPredicao.dadosClutter);
-        [C, S] = utils.resizeGeotiff(C, S);
-    
-    else
+    % if ~isempty(dadosPredicao.dadosClutter)
+    % 
+    %     [C, S] = utils.read_clutter(dadosPredicao.dadosClutter);
+    %     [C, S] = utils.resizeGeotiff(C, S);
+    % 
+    % else
        
         C = 2 * ones(size(A));
         S = R;
     
-    end
+    % end
     
     % C = double(C);
     
@@ -102,7 +106,7 @@ function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao)
 
     %----------------------------------------------------------------------
     % Cria um elipsoide de referência para os cálculos de distância
-    wgs84 = wgs84Ellipsoid("meter");
+    %wgs84 = wgs84Ellipsoid("meter");
     
 
     %----------------------------------------------------------------------
@@ -172,8 +176,8 @@ function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao)
 
     %--------------------------------------------------------------------------
     % Cria barra de progresso
-    barExecFig = uifigure;
-    barExec = uiprogressdlg(barExecFig);
+    %barExecFig = uifigure;
+    %barExec = uiprogressdlg(barExecFig);
     
     %--------------------------------------------------------------------------
     % Loop de execução
@@ -182,11 +186,11 @@ function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao)
 
         %------------------------------------------------------------------
         % atualiza barra de status de execução
-        if ~mod(i, 1)
-            percent_exec = i /(size(borda,1));
-            barExec.Message = sprintf('Executado: %.1f %%', (percent_exec * 100));
-            barExec.Value = percent_exec;
-        end
+        % if ~mod(i, 1)
+        %     percent_exec = i /(size(borda,1));
+        %     barExec.Message = sprintf('Executado: %.1f %%', (percent_exec * 100));
+        %     barExec.Value = percent_exec;
+        % end
         
         %------------------------------------------------------------------
         % Atualiza o ponto externo da radial
@@ -349,6 +353,6 @@ function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao)
     lb = fillmissing(lb, 'linear');
     pwrRX = fillmissing(pwrRX, 'linear');
     ganhosAnt = fillmissing(ganhosAnt, 'linear');
-    close(barExec)
-    close(barExecFig)
+    %close(barExec)
+    %close(barExecFig)
 end
