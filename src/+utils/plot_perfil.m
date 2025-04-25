@@ -112,13 +112,16 @@ function plot_perfil(fileData, latRX, lonRX)
     RX_enlace = RX;
     
     %--------------------------------------------------------------------------
-    % Inicializas a classe de predição conforme o modelo a ser utilizado
+
     switch modelo
         case 'Hata'
             predicao = model.Hata(TX, RX_enlace, A, R, C, S);
 
         case 'P.1812'
            predicao = model.P1812(TX, RX_enlace, A, R, C, S);
+
+        case 'P.526'
+           predicao = model.P526(TX, RX_enlace, A, R, C, S);
 
         otherwise
             error("Modelo não implementado");
@@ -181,10 +184,18 @@ function plot_perfil(fileData, latRX, lonRX)
     % Plot do clutter
     
     for n = 1:(numel(distancias) - 1)
+        cor = ceil(clutter(n));
+        if cor > size(cores, 1)
+            cor = size(cores, 1);
+        end
+        if cor == 0
+            cor = 1;
+        end
+
         fill([distancias(n) distancias(n) distancias(n+1) distancias(n+1)],...
             [elevacoes(n)  (elevacoes(n) + alturas_clutter(n)) ...
             (elevacoes(n) + alturas_clutter(n)) elevacoes(n)], ...
-            cores(clutter(n),:), 'EdgeColor', 'none');
+            cores(cor,:), 'EdgeColor', 'none');
     end
 
     %----------------------------------------------------------------------

@@ -53,14 +53,18 @@ function plota_predicao(dadosPredicao, Z, tipoZ)
         MarkerEdgeColor="k",MarkerFaceColor="c",MarkerSize=10,Marker="o")
     title (sprintf('Dados de Cobertura (%s) da estação %s\nModelo: %s', tipoZ, dadosPredicao.Base.Nome, modelo));
     
+    if tipoZ == "Nível de sinal"
+        colormap('turbo')
+    else
     % cria um colormap do branco->amarelo->vermelho 
-    cmap = zeros(256, 3);
-    cmap(1:128, 1:2) = repmat([1 1], 128, 1);
-    cmap(1:128, 3) = linspace(0.8, 0, 128);
-    cmap(129:end, 1) = 1;
-    cmap(129:end, 2) = linspace(1, 0, 128);
-
-    colormap(cmap)
+        cmap = zeros(256, 3);
+        cmap(1:128, 1:2) = repmat([1 1], 128, 1);
+        cmap(1:128, 3) = linspace(0.8, 0, 128);
+        cmap(129:end, 1) = 1;
+        cmap(129:end, 2) = linspace(1, 0, 128);
+    
+        colormap(cmap)
+    end
     colorbar
   
     text1 = dadosPredicao.Base.Nome;
@@ -68,5 +72,6 @@ function plota_predicao(dadosPredicao, Z, tipoZ)
     textm(base.Latitude+delta,base.Longitude+delta,text1)
     cb = colorbar;
     cb.Label.String = tipoZ;
+
 end
 

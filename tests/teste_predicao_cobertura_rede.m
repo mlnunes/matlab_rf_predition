@@ -52,7 +52,7 @@ if ~isempty(raio_user)
         prx_rede = -inf(size(A));
         rxLat = 0;
         rxLon = 0;
-        numSites = size(configRede, 1);
+        numSites = 1;%size(configRede, 1);
 
         p = utils.parpoolCheck();
         numWorkers = p.NumWorkers;
@@ -60,13 +60,13 @@ if ~isempty(raio_user)
         prx_rede_cell = repmat({prx_rede}, numWorkers, 1);
         lb_rede_cell = repmat({lb_rede}, numWorkers, 1);
 
-        idxsCells = zeros(numSites);
+        idxsCells = zeros(1, numSites);
         aux = 0;
         txLat = 0;
         txLon = 0;
 
         for ii = 1 : numSites
-            if ((configRede{ii, 'Lat'} == txLat) && (configRede{ii, 'Lon'} == txLon))
+            if ((configRede{ii, 'Lat'} ~= txLat) && (configRede{ii, 'Lon'} ~= txLon))
                 aux = aux + 1;
                 idxsCells(aux) = ii;
             end
@@ -83,7 +83,7 @@ if ~isempty(raio_user)
             else
                 idxsPar = idxsCells(m : end);
             end
-            %idxsPar=[181 182 184, 185];
+
             parfor x = 1:numel(idxsPar)
                 lb_rede_cell{x} = inf(size(A));
                 prx_rede_cell{x} = -inf(size(A));
@@ -95,7 +95,7 @@ if ~isempty(raio_user)
                 
 
                 dadosPredicao = struct('modeloPredicao', 'P.526', ...
-                    'frequencia', configRede{n,'Freq_TX'} * 1e3, ...
+                    'frequencia', configRede{n,'Freq_TX'} * 1e6, ...
                     'dadosRelevo', 'tests/data/cuiaba_crop_dem.tif', ...
                     'dadosClutter', 'tests/data/cuiaba_crop_clu.tif', ...
                     'Movel', struct('Antena', struct('Altura',  1.6)), ...
@@ -129,13 +129,13 @@ if ~isempty(raio_user)
                     dadosPredicao.Base.Antena.Azimute = configRede{nn, 'Azimute'};
                     dadosPredicao.Base.Antena.tiltMecanico = configRede{nn, 'Tilt'};
                     dadosPredicao.Base.Antena.ArquivoDados = strcat(pwd, bar, 'tests', bar, 'data', bar, 'antenas', bar, string(configRede{nn, 'Antenna_Model'}));
-                    
+
                     antenaBase = utils.readAntennaData(dadosPredicao.Base.Antena.ArquivoDados, dadosPredicao.Base.Antena.Modelo,...
                         dadosPredicao.Base.Antena.Funcao, dadosPredicao.Base.Antena.Azimute, dadosPredicao.Base.Antena.tiltMecanico);
 
                     RX = rxsite();
                     TX = txsite(Latitude=configRede{nn, 'Lat'}, Longitude=configRede{nn, 'Lon'});
-    
+
                     for t = 1 : size(gAnt_local, 1)
                         for q = 1 : size( gAnt_local, 2)
                             if ~isinf(lb_local(t, q))
@@ -155,7 +155,7 @@ if ~isempty(raio_user)
                                 if prxAux > prx_rede_cell{x}(t, q)
                                     prx_rede_cell{x}(t, q) = prxAux;
                                 end
-                                
+
                             end
                         end
                     end
@@ -183,6 +183,7 @@ if ~isempty(raio_user)
         % Caixa de diálogo para plotar o resultado
         lb_rede(isinf(lb_rede)) = -inf;
         lb = lb_rede;
+        prx_rede(isinf(prx_rede)) = nan;
         prx = prx_rede;
         disp('Simulação concluída')
         run tests/teste_plota_area_predicao.m;

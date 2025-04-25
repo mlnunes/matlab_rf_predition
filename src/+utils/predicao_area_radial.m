@@ -334,7 +334,7 @@ function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao, A 
             calculo(predicao, gAnt(3, k), 'perfil_distancia', d, 'perfil_elevacao', e, ...
                     'perfil_clutter', c);
             lb(celulas_radial(k, 1), celulas_radial(k, 2)) = predicao.Lb;
-            pwrRx(celulas_radial(k, 1), celulas_radial(k, 2)) = predicao.PRX; %executar a partir da linha 36 do P1812
+            %pwrRx(celulas_radial(k, 1), celulas_radial(k, 2)) = predicao.PRX; %executar a partir da linha 36 do P1812
             ganhosAnt(celulas_radial(k, 1), celulas_radial(k, 2)) = gAnt(3, k);
 
             %--------------------------------------------------------------
@@ -349,9 +349,11 @@ function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao, A 
     % Interpola os valores não calculados à partir das células vizinhas
     idxs_fora = find(~mascaraDentro);
     lb(idxs_fora) = -Inf;
-    pwrRX(idxs_fora) = -Inf;
+    %pwrRX(idxs_fora) = -Inf;
     lb = fillmissing(lb, 'linear');
-    pwrRX = fillmissing(pwrRX, 'linear');
+    % % Scale to the transmitter power
+    EpPtx = 199.36 + 20*log10(base.TransmitterFrequency) + 10*log10(base.TransmitterPower / 1e3);
+    pwrRx = EpPtx - lb;
     ganhosAnt = fillmissing(ganhosAnt, 'linear');
     %close(barExec)
     %close(barExecFig)
