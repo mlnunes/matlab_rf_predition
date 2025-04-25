@@ -11,12 +11,8 @@ function plota_predicao(dadosPredicao, Z, tipoZ)
         tipoZ string
     end
     
-    
-    if isunix
-        dir_app = '/home/mlnunes/Documentos/dev/matlab/propagação';
-    else
-        dir_app = 'C:\Users\mlnunes\Documents\matlab_rf_predition';
-    end
+    dir_app = fileparts(mfilename('fullpath'));
+
 
     %----------------------------------------------------------------------
     % Carrega os parâmetros utilizados para realizar a predição
@@ -37,7 +33,7 @@ function plota_predicao(dadosPredicao, Z, tipoZ)
     %----------------------------------------------------------------------
     % Caracteristicas da area
     % Carrega dados do relevo
-    [A, R] = utils.loadRaster(fullfile(dir_app, dadosPredicao.dadosRelevo), true);
+    [A, R] = utils.loadRaster(fullfile(dir_app, '..', '..', dadosPredicao.dadosRelevo), true);
     [A, R] = utils.resizeGeotiff(A, R);
     
     %--------------------------------------------------------------------------

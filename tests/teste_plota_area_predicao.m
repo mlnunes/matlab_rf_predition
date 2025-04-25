@@ -1,48 +1,59 @@
-% Plota o gráfico de predição considerando as variaveis lp para antenuação 
+% Plota o gráfico de predição considerando as variaveis lp para antenuação
 % prx para nível recebido
 
-if isunix
-    bar = '/';
-else
-    bar = '\';
-end
+fileFolder = fileparts(mfilename('fullpath'));
 
 if ~exist('dadosPredicao', 'var')
-    aux = dir (strcat('tests', bar, 'config', bar));
+    aux = dir (fullfile(fileFolder, 'config'));
     aux = {aux.name};
 
     arquivos = aux(3:end);
 
-    config = menu('Escolha uma configuração para rodar a predição:', arquivos);
+    [config, configStatus] = listdlg('PromptString', {'Escolha uma configuração',  'para rodar a predição:'},...
+        'ListString', arquivos,...
+        'SelectionMode','single',...
+        'ListSize',[250,250]);
 
-    arquivoConfig = strcat('tests', bar, 'config', bar, arquivos{config});
+    if ~configStatus
+        return
+    end
+
+    arquivoConfig = fullfile(fileFolder, 'config', arquivos{config});
     run(arquivoConfig);
 end
 
 
-graf = {'Atenuação', 'Nível de sinal', 'Não'};
-grafico = menu('Deseja ver o gráfico do resultado?', graf);
+grafico = questdlg('Deseja ver o gráfico do resultado?', '', ...
+    "Atenuação", "Nível de sinal", "Não", "Não");
 
-if grafico < 3
-    dimensoes = menu('Qual visualização?', {'2D', '3D'});
-
-    if dimensoes == 1
-    
-        if grafico == 1
-            utils.plota_predicao(dadosPredicao, lb, graf{grafico})
-        
-        elseif grafico == 2
-            utils.plota_predicao(dadosPredicao, prx, graf{grafico})
-        end
-    else
-        if grafico == 1
-            utils.plota_predicao3D(dadosPredicao, lb, graf{grafico})
-        
-        elseif grafico == 2
-            utils.plota_predicao3D(dadosPredicao, prx, graf{grafico})
-        end
-
-    end
+if grafico == "Não"
+    return
 end
+
+%dimensoes = menu('Qual visualização?', {'2D', '3D'});
+
+dimensoes = questdlg('Qual visualização', '',...
+            "2D", "3D", "Cancela", "2D");
+
+
+if dimensoes == "2D"
+
+    if grafico == "Atenuação"
+        utils.plota_predicao(dadosPredicao, lb, grafico)
+
+    elseif grafico == "Nível de sinal"
+        utils.plota_predicao(dadosPredicao, prx, grafico)
+    end
+
+elseif dimensoes == "3D"
+    if grafico == "Atenuação"
+        utils.plota_predicao3D(dadosPredicao, lb, grafico)
+
+    elseif grafico == "Nível de sinal"
+        utils.plota_predicao3D(dadosPredicao, prx, grafico)
+    end
+    
+end
+
 
 clear dadosPredicao;

@@ -1,4 +1,4 @@
-function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao, A , R)
+function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao, A , R, lb , ganhosAnt)
     %----------------------------------------------------------------------
     % Calcula a predição e cobertura de uma área
     %
@@ -39,6 +39,8 @@ function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao, A 
         dadosPredicao struct {mustBeNonempty}
         A = []
         R = []
+        lb = []
+        ganhosAnt = []
     end
     
     %----------------------------------------------------------------------
@@ -89,10 +91,11 @@ function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao, A 
     
     %--------------------------------------------------------------------------
     % Cria variáveis de saída
-    pwrRx = nan(size(A));
-    lb = pwrRx;
-    ganhosAnt = lb;
     
+    lb = nan(size(A));
+    ganhosAnt = nan(size(A));
+    
+
     %--------------------------------------------------------------------------
     % elevação da estação Base
     [n, m] = utils.get_raster_idx(base.Latitude, base.Longitude, R);
