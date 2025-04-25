@@ -4,7 +4,8 @@
 % e dados de classificação de estruturas
 %--------------------------------------------------------------------------
 
-configRede = readtable("tests/data/Nextim_5G_MT 1.csv", "VariableNamingRule", "preserve");
+%configRede = readtable("tests/data/Nextim_5G_MT 1.csv", "VariableNamingRule", "preserve");
+configRede = readtable("/home/mlnunes/Documentos/dev/matlab/propagação/tests/data/Nextim_5G_MT 1.csv", "VariableNamingRule", "preserve");
 n = 1;
 dadosPredicao = struct('modeloPredicao', 'P.526', ...
                            'frequencia', configRede{n,'Freq_TX'} * 1e3, ...

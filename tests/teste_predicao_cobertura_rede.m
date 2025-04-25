@@ -43,7 +43,10 @@ if ~isempty(raio_user)
         error("Entrada inválida! Insira um número inteiro.")
     else
         [A, R] = utils.loadRaster('tests/data/cuiaba_crop_dem.tif', true);
+        [C, S] = utils.read_clutter('tests/data/cuiaba_crop_clu.tif');
         [A , R] = utils.resizeGeotiff(A, R);
+        [C, S] = utils.resizeGeotiff(C , S);
+        A = A + C;
         R.GeographicCRS = [];
         lb_rede = inf(size(A));
         prx_rede = -inf(size(A));
@@ -80,7 +83,7 @@ if ~isempty(raio_user)
             else
                 idxsPar = idxsCells(m : end);
             end
-            
+            %idxsPar=[181 182 184, 185];
             parfor x = 1:numel(idxsPar)
                 lb_rede_cell{x} = inf(size(A));
                 prx_rede_cell{x} = -inf(size(A));
@@ -108,14 +111,20 @@ if ~isempty(raio_user)
                     'tiltMecanico', configRede{n, 'Tilt'}, ...
                     'Tipo', 'isotropic')));
 
+ 
                 %--------------------------------------------------------------------
                 % Executa o cálculo de predição com o parâmetros selecionados
                 [lb_local, prx_local, gAnt_local] = utils.predicao_area_radial(raio, dadosPredicao, A , R);
                 lb_rede_cell{x} = lb_local;
                 prx_rede_cell{x} =  prx_local;
-                
+
                 nn = n + 1;
-                while ((txLat == configRede{nn, 'Lat'}) && (txLon == configRede{nn, 'Lon'}))
+                
+                while (nn <= numSites)
+
+                    if ((txLat ~= configRede{nn, 'Lat'}) || (txLon ~= configRede{nn, 'Lon'}))
+                        break
+                    end
 
                     dadosPredicao.Base.Antena.Azimute = configRede{nn, 'Azimute'};
                     dadosPredicao.Base.Antena.tiltMecanico = configRede{nn, 'Tilt'};
