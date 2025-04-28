@@ -57,7 +57,7 @@ if ~isempty(raio_user)
         prx_rede = -inf(size(A));
         rxLat = 0;
         rxLon = 0;
-        numSites = height(configRede);
+        numSites = 1; %height(configRede);
 
         p = utils.parpoolCheck();
         numWorkers = p.NumWorkers;
@@ -67,19 +67,8 @@ if ~isempty(raio_user)
         gAnt_cell = repmat({lb_rede}, numWorkers, 1);
 
 
-
-        % for ii = 1 : numSites
-        %     if ((configRede{ii, 'Lat'} ~= txLat) && (configRede{ii, 'Lon'} ~= txLon))
-        %         aux = aux + 1;
-        %         idxsCells(aux) = ii;
-        %     end
-        %     txLat = configRede{ii, 'Lat'};
-        %     txLon = configRede{ii, 'Lon'};
-        % end
-
         [C, idxsCells, ic] = unique(configRede(1:numSites, :).("_LatLonHash"), "stable");
 
-        %idxsCells = idxsCells(1:aux);
 
         for m = 1 : numWorkers : numel(idxsCells)
 
@@ -90,8 +79,7 @@ if ~isempty(raio_user)
             end
 
             parfor x = 1:numel(idxsPar)
-                %lb_rede_cell{x} = inf(size(A));
-                %prx_rede_cell{x} = -inf(size(A));
+
                 n = idxsPar(x);
                 disp (n)
                 txLat = configRede.Lat(n);
@@ -106,7 +94,7 @@ if ~isempty(raio_user)
                     'Base', struct('Nome', configRede{n, 'Cell'}, ...
                     'Latitude', txLat, ...
                     'Longitude', txLon, ...
-                    'Potencia',53, ...
+                    'Potencia',53.15, ...
                     'Antena', struct('Altura', configRede{n, 'Altura'} , ....
                     'ArquivoDados', fullfile(fileFolder, 'data', 'antenas', configRede.Antenna_Model{n}), ...
                     'Modelo', 'AIR6419', ...

@@ -35,6 +35,7 @@ function [distancias, elevacoes, clutter] = analisa_perfil(TX, vetor_intersec, A
     aux(:,1) = ceil((S.LatitudeLimits(2) - vetor_intersec(:,2) )/S.CellExtentInLatitude);
     aux(:,2) = ceil((vetor_intersec(:,1) - S.LongitudeLimits(1))/S.CellExtentInLongitude);
     c = (C(sub2ind(size(C), aux(:,1), aux(:,2))))';
+    c = double(c);
 
     %----------------------------------------------------------------------
     % Ordena o array distancia em ordem crescente

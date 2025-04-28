@@ -68,8 +68,11 @@ classdef antena < handle
             % extração do ganho vertical
     
             % calculo da inclinação relativa do ponto em realcao a antena
-            inclinacaoPontoAjustada = wrapTo360(inclinacaoPonto - obj.Tilt_ele - obj.Tilt_mec);
-    
+            if inclinacaoPonto <=  (obj.Tilt_mec + obj.Tilt_ele)
+                inclinacaoPontoAjustada = wrapTo360(inclinacaoPonto - obj.Tilt_ele - obj.Tilt_mec);
+            else
+                inclinacaoPontoAjustada = wrapTo360( -inclinacaoPonto + obj.Tilt_ele + obj.Tilt_mec);
+            end
             % ganho vertical da antena da direção do ponto
             gDirecaoV = interp1([obj.V_ganho(:, 1); 360], [obj.V_ganho(:, 2); obj.V_ganho(1,2)], inclinacaoPontoAjustada);
 

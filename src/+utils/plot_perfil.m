@@ -1,29 +1,40 @@
 function plot_perfil(fileData, latRX, lonRX)
-    %----------------------------------------------------------------------
-    % Traça o grafico do perfil do terreno, posiçao das estaçoes, linha de
-    % visada e primeira zona de Fresnel
-    % 
-    % TX: classe TX
-    % RX: classe RX
-    % A, R: geotiff elevação
-    % C, S: geotiff clutter
-    %----------------------------------------------------------------------
-    % validação dos argumentos
+%----------------------------------------------------------------------
+% Traça o grafico do perfil do terreno, posiçao das estaçoes, linha de
+% visada e primeira zona de Fresnel
+%
+% TX: classe TX
+% RX: classe RX
+% A, R: geotiff elevação
+% C, S: geotiff clutter
+%----------------------------------------------------------------------
+% validação dos argumentos
 
-    arguments
-        fileData
-        latRX double
-        lonRX double
-    end
+arguments
+    fileData
+    latRX double
+    lonRX double
+end
 
-    %----------------------------------------------------------------------
-    % Carrega os parâmetros utilizados para realizar a predição
-    run(fileData)
+% if ~isstruct(fileData)
+%     if isfile(fileData)
+        %----------------------------------------------------------------------
+        % Carrega os parâmetros utilizados para realizar a predição
+        run(fileData)
+%     else
+%         return
+%     end
+% end
+% 
+% if isempty(dadosPredicao)
+%     return
+% 
+% else
 
     %----------------------------------------------------------------------
     % Carrega o modelo de predição a ser empregado
     modelo = dadosPredicao.modeloPredicao;
-    
+
     %----------------------------------------------------------------------
     % Dados da estação TX
     TX = txsite("Name", dadosPredicao.Base.Nome,...
@@ -33,11 +44,11 @@ function plot_perfil(fileData, latRX, lonRX)
         "AntennaHeight", dadosPredicao.Base.Antena.Altura,...
         "TransmitterFrequency", dadosPredicao.frequencia,...
         "TransmitterPower", dadosPredicao.Base.Potencia);
-    
-    
+
+
     % Carrega os dados da antena
     antenaBase = utils.readAntennaData(dadosPredicao.Base.Antena.ArquivoDados, dadosPredicao.Base.Antena.Modelo,...
-            dadosPredicao.Base.Antena.Funcao, dadosPredicao.Base.Antena.Azimute, dadosPredicao.Base.Antena.tiltMecanico);
+        dadosPredicao.Base.Antena.Funcao, dadosPredicao.Base.Antena.Azimute, dadosPredicao.Base.Antena.tiltMecanico);
 
     %----------------------------------------------------------------------
     % Caracteristicas da area
@@ -48,24 +59,24 @@ function plot_perfil(fileData, latRX, lonRX)
     % Carrega dados do clutter, se não houver arqivo de clutter uma matriz
     % default com representação área aberta/rural
     if ~isempty(dadosPredicao.dadosClutter)
-    
+
         [C, S] = utils.read_clutter(dadosPredicao.dadosClutter);
-    
+
     else
-       
+
         C = 2 * ones(size(A));
         S = R;
-    
+
     end
-    
+
 
     %--------------------------------------------------------------------------
     % Dados da estaçao RX
     RX = rxsite("Latitude",latRX, ...
-               "Longitude", lonRX, ...
-               "AntennaHeight", dadosPredicao.Movel.Antena.Altura);
+        "Longitude", lonRX, ...
+        "AntennaHeight", dadosPredicao.Movel.Antena.Altura);
 
-   
+
     %---------------------------------------------------------------------
     %levanta o perfil das elevações e clutter do terreno
     [distancias, elevacoes, clutter ] = utils.levanta_perfil(TX, RX, A, R, C, S);
@@ -76,7 +87,7 @@ function plot_perfil(fileData, latRX, lonRX)
     % utiliza apenas região limitada pela mínima e máxima elevações
     min_elevacao = min(elevacoes);
     distancias_km = distancias * 1000;
-    
+
     %-----------------------------------------------------------------------b
     % cálculo do elipsoide da primeira zona de Fresnel
     % F: vetor raio do elipsoide
@@ -86,7 +97,7 @@ function plot_perfil(fileData, latRX, lonRX)
     lambda = physconst("LightSpeed") / TX.TransmitterFrequency;
     F = sqrt(lambda * distancias_km.* ...
         (distancias_km(end) - distancias_km) / (distancias_km(end)));
-    
+
     Fl = ((elevacoes(end) + RX.AntennaHeight - elevTX)/...
         distancias_km(end)) * distancias_km + elevTX - F;
 
@@ -110,7 +121,7 @@ function plot_perfil(fileData, latRX, lonRX)
     longitudes_enlace = linspace(TX.Longitude, RX.Longitude, num_pts);
     E_enlace = zeros(1, num_pts);
     RX_enlace = RX;
-    
+
     %--------------------------------------------------------------------------
 
     switch modelo
@@ -118,19 +129,19 @@ function plot_perfil(fileData, latRX, lonRX)
             predicao = model.Hata(TX, RX_enlace, A, R, C, S);
 
         case 'P.1812'
-           predicao = model.P1812(TX, RX_enlace, A, R, C, S);
+            predicao = model.P1812(TX, RX_enlace, A, R, C, S);
 
         case 'P.526'
-           predicao = model.P526(TX, RX_enlace, A, R, C, S);
+            predicao = model.P526(TX, RX_enlace, A, R, C, S);
 
         otherwise
             error("Modelo não implementado");
     end
-    
+
     %----------------------------------------------------------------------
     % loop de varredura no pontos do enlace
     for idx = 2:num_pts
-        
+
         %----------------------------------------------------------------------
         % Carrega as coordenadas da ponto de comparação
         RX_enlace.Latitude = latitudes_enlace(idx);
@@ -142,7 +153,7 @@ function plot_perfil(fileData, latRX, lonRX)
         [distanciaPonto, azimutePonto] = utils.Propagation.Distance(TX, RX_enlace, "m");
         [x, y] = utils.get_raster_idx(RX_enlace.Latitude, RX_enlace.Longitude, R);
         inclinacaoPonto = rad2deg(atan(((RX_enlace.AntennaHeight + A(x, y)) - (TX.AntennaHeight + elevTX)) / distanciaPonto));
-        
+
         %------------------------------------------------------------------
         % extrai os dados de ganho na direção do ponto
         % [gH, gV] = antenaBase.ganhoDirecao(azimutePonto, inclinacaoPonto);
@@ -154,13 +165,13 @@ function plot_perfil(fileData, latRX, lonRX)
         predicao.siteRX = RX_enlace;
         calculo(predicao, gAnt);
         E_enlace(idx) = predicao.PRX;
-    
+
     end
 
     %----------------------------------------------------------------------
     % Calculo da antenuação no espaço livre TX-RX
     FSL = utils.Propagation.PathLoss(TX, RX, "Free space");
-    
+
     %----------------------------------------------------------------------
     % Cálculo da antenuação total do enlace
     Atn = predicao.Lb;
@@ -176,13 +187,13 @@ function plot_perfil(fileData, latRX, lonRX)
 
     %----------------------------------------------------------------------
     % mapeia os valores de clutter com cores representativas
-    
+
     cores = [hex2rgb('#007cff'); hex2rgb('#0bdc0b'); hex2rgb('#ff7f7f'); hex2rgb('#4fae00'); hex2rgb('#b3263e')];
-    
+
 
     %----------------------------------------------------------------------
     % Plot do clutter
-    
+
     for n = 1:(numel(distancias) - 1)
         cor = ceil(clutter(n));
         if cor > size(cores, 1)
@@ -203,7 +214,7 @@ function plot_perfil(fileData, latRX, lonRX)
     area(distancias, elevacoes, 'FaceColor', '#90a2b5', 'EdgeColor', '#101010');
     ylim([min(min_elevacao, min(Fl)) inf])
 
-    
+
     %----------------------------------------------------------------------
     % desenha a linha de visada
     plot([distancias(1) distancias(end)], [(elevTX + TX.AntennaHeight) ...
@@ -225,7 +236,7 @@ function plot_perfil(fileData, latRX, lonRX)
     % define a cor de fundo
     ax = gca;
     ax.Color = 'white';
-    
+
     hold off;
 
     %----------------------------------------------------------------------
@@ -250,3 +261,5 @@ function plot_perfil(fileData, latRX, lonRX)
 
 
 end
+
+% end
