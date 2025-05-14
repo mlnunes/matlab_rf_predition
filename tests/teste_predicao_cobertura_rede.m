@@ -51,13 +51,13 @@ if ~isempty(raio_user)
         [C, S] = utils.read_clutter('tests/data/cuiaba_crop_clu.tif');
         [A , R] = utils.resizeGeotiff(A, R);
         [C, S] = utils.resizeGeotiff(C , S);
-        A = A + C;
         R.GeographicCRS = [];
+        S.GeographicCRS = [];
         lb_rede = inf(size(A));
         prx_rede = -inf(size(A));
         rxLat = 0;
         rxLon = 0;
-        numSites = 1; %height(configRede);
+        numSites = 3;%height(configRede);
 
         p = utils.parpoolCheck();
         numWorkers = p.NumWorkers;
@@ -67,7 +67,9 @@ if ~isempty(raio_user)
         gAnt_cell = repmat({lb_rede}, numWorkers, 1);
 
 
-        [C, idxsCells, ic] = unique(configRede(1:numSites, :).("_LatLonHash"), "stable");
+        [Cc, idxsCells, ic] = unique(configRede(1:numSites, :).("_LatLonHash"), "stable");
+        %[Cc, idxsCells, ic] = unique(configRede(1:numSites, :).("Cell"), "stable");
+
 
 
         for m = 1 : numWorkers : numel(idxsCells)
@@ -78,23 +80,25 @@ if ~isempty(raio_user)
                 idxsPar = idxsCells(m : end);
             end
 
+            %parfor
             parfor x = 1:numel(idxsPar)
 
                 n = idxsPar(x);
                 disp (n)
                 txLat = configRede.Lat(n);
                 txLon = configRede.Lon(n);
-
+                [txN, txM] = utils.get_raster_idx(txLat, txLon, R);
+                elevTX = A(txN, txM);
 
                 dadosPredicao = struct('modeloPredicao', 'P.526', ...
                     'frequencia', configRede{n,'Freq_TX'} * 1e6, ...
-                    'dadosRelevo', 'tests/data/cuialb_localba_crop_dem.tif', ...
+                    'dadosRelevo', 'tests/data/cuiaba_crop_dem.tif', ...
                     'dadosClutter', 'tests/data/cuiaba_crop_clu.tif', ...
                     'Movel', struct('Antena', struct('Altura',  1.6)), ...
                     'Base', struct('Nome', configRede{n, 'Cell'}, ...
                     'Latitude', txLat, ...
                     'Longitude', txLon, ...
-                    'Potencia',53.15, ...
+                    'Potencia',53.03, ...
                     'Antena', struct('Altura', configRede{n, 'Altura'} , ....
                     'ArquivoDados', fullfile(fileFolder, 'data', 'antenas', configRede.Antenna_Model{n}), ...
                     'Modelo', 'AIR6419', ...
@@ -106,7 +110,8 @@ if ~isempty(raio_user)
 
                 %--------------------------------------------------------------------
                 % Executa o cálculo de predição com o parâmetros selecionados
-                [lb_rede_cell{x}, prx_rede_cell{x}, gAnt_cell{x}] = utils.predicao_area_radial(raio, dadosPredicao, A , R, lb_rede_cell{x}, gAnt_cell{x});
+                %[lb_rede_cell{x}, prx_rede_cell{x}, gAnt_cell{x}] = utils.predicao_area_radial(raio, dadosPredicao, A , R, C, S, lb_rede_cell{x}, gAnt_cell{x});
+                [lb_rede_cell{x}, prx_rede_cell{x}, gAnt_cell{x}] = utils.predicao_area(raio, dadosPredicao, A , R, C, S, lb_rede_cell{x}, gAnt_cell{x});
                 lb_local = lb_rede_cell{x};
                 prx_local = prx_rede_cell{x};
 
@@ -117,7 +122,7 @@ if ~isempty(raio_user)
                     RX = rxsite();
 
                     for nn = idxSetores(2 : end)
-
+                        disp(nn)
                         dadosPredicao.Base.Antena.Azimute = configRede{nn, 'Azimute'};
                         dadosPredicao.Base.Antena.tiltMecanico = configRede{nn, 'Tilt'};
                         dadosPredicao.Base.Antena.ArquivoDados = fullfile( fileFolder, 'data', 'antenas', configRede.Antenna_Model{nn});
@@ -134,19 +139,20 @@ if ~isempty(raio_user)
                                     RX.Latitude = R.intrinsicYToLatitude(t);
                                     RX.Longitude= R.intrinsicXToLongitude(q);
                                     [distancia, azimute] = utils.Propagation.Distance(TX, RX, "m");
-                                    inclinacao = rad2deg(atan((dadosPredicao.Movel.Antena.Altura + A(t, q) - ...
-                                        configRede{nn, 'Altura'}) / distancia));
+                                    inclinacao = rad2deg(atan(((dadosPredicao.Movel.Antena.Altura + A(t, q)) - ...
+                                        (configRede{nn, 'Altura'} + elevTX)) / distancia));
                                     [gH, gV] = antenaBase.ganhoDirecao(azimute, inclinacao);
                                     gAntAux = antenaBase.Ganho - gH - gV;
                                     lbAux = lb_local(t, q) - gAnt_cell{x}(t, q) + gAntAux;
                                     prxAux = prx_local(t, q) - gAnt_cell{x}(t, q) + gAntAux;
+                                    
 
                                     if lbAux < lb_rede_cell{x}(t, q)
                                         lb_rede_cell{x}(t, q) = lbAux;
                                     end
 
                                     if prxAux > prx_rede_cell{x}(t, q)
-                                        prx_rede_cell{x}(t, q) = prxAux;
+                                       prx_rede_cell{x}(t, q) = prxAux;
                                     end
 
                                 end

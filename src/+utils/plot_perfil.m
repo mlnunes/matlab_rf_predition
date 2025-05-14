@@ -95,23 +95,17 @@ end
     % Fu: limite superior do elipsoide em relação a linha de visada
 
     lambda = physconst("LightSpeed") / TX.TransmitterFrequency;
+    alt_visada = linspace(TX.AntennaHeight, RX.AntennaHeight, numel(distancias_km));
     F = sqrt(lambda * distancias_km.* ...
         (distancias_km(end) - distancias_km) / (distancias_km(end)));
 
     Fl = ((elevacoes(end) + RX.AntennaHeight - elevTX)/...
-        distancias_km(end)) * distancias_km + elevTX - F;
+        distancias_km(end)) * distancias_km + (elevTX + alt_visada) - F;
 
     Fu = ((elevacoes(end) + RX.AntennaHeight - elevTX)/...
-        distancias_km(end)) * distancias_km + elevTX + F;
-
-    %--------------------------------------------------------------
-    % calcula o array de alturas adicional conforme a classificação
-    % de clutter REC P1812.7 seção 3.2.1, tabela 2
+        distancias_km(end)) * distancias_km + (elevTX + alt_visada) + F;
+    
     alturas_clutter = clutter;
-    alturas_clutter(ismember(alturas_clutter, [1 2])) = 0;
-    alturas_clutter(alturas_clutter == 3) = 10;
-    alturas_clutter(alturas_clutter == 4) = 15;
-    alturas_clutter(alturas_clutter == 5) = 20;
 
     %----------------------------------------------------------------------
     % cálculo da intensidade campo recebida ao longo dos enlace
@@ -130,6 +124,15 @@ end
 
         case 'P.1812'
             predicao = model.P1812(TX, RX_enlace, A, R, C, S);
+
+            %--------------------------------------------------------------
+            % calcula o array de alturas adicional conforme a classificação
+            % de clutter REC P1812.7 seção 3.2.1, tabela 2
+            alturas_clutter(ismember(alturas_clutter, [1 2])) = 0;
+            alturas_clutter(alturas_clutter == 3) = 10;
+            alturas_clutter(alturas_clutter == 4) = 15;
+            alturas_clutter(alturas_clutter == 5) = 20;
+            
 
         case 'P.526'
             predicao = model.P526(TX, RX_enlace, A, R, C, S);
@@ -251,7 +254,7 @@ end
     fprintf("\tAzimute: %.1f°\t/ tilt: %.1f°\n", dadosPredicao.Base.Antena.Azimute, dadosPredicao.Base.Antena.tiltMecanico)
     fprintf("\nRX:\nAltitude: %.1f m\nCoor: %.5f %.5f\n", elevRX, RX.Latitude, RX.Longitude)
     fprintf("Antena: %.1f m\n", RX.AntennaHeight)
-    fprintf("Nível de sinal recebido: %.1f dBuV\n", E_enlace(end))
+    fprintf("Nível de sinal recebido: %.1f dBm\n", E_enlace(end))
     fprintf("\nEnlace:\nDistancia: %.1f Km\n", distancias(end))
     fprintf("Angulos: V: %.2f° H: %.2f°\n", inclinacaoPonto, azimutePonto)
     fprintf("Padrão de atenuação da antena: V: %.2f dB H: %.2f dB\n", gV, gH)

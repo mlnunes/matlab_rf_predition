@@ -1,4 +1,4 @@
-function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao, A , R, lb , ganhosAnt)
+function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao, A , R, C, S, lb , ganhosAnt)
     %----------------------------------------------------------------------
     % Calcula a predição e cobertura de uma área
     %
@@ -39,6 +39,8 @@ function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao, A 
         dadosPredicao struct {mustBeNonempty}
         A = []
         R = []
+        C = []
+        S = []
         lb = []
         ganhosAnt = []
     end
@@ -75,19 +77,22 @@ function [lb, pwrRx, ganhosAnt] = predicao_area_radial(raio_m, dadosPredicao, A 
     %--------------------------------------------------------------------------
     % Carrega dados do clutter, se não houver arqivo de clutter uma matriz
     % default com representação área aberta/rural
-    % if ~isempty(dadosPredicao.dadosClutter)
-    % 
-    %     [C, S] = utils.read_clutter(dadosPredicao.dadosClutter);
-    %     [C, S] = utils.resizeGeotiff(C, S);
-    % 
-    % else
-       
-        C = 2 * ones(size(A));
-        S = R;
     
-    % end
+    if  isempty(C) || isempty(S)
+        if ~isempty(dadosPredicao.dadosClutter)
+
+            [C, S] = utils.read_clutter(dadosPredicao.dadosClutter);
+            [C, S] = utils.resizeGeotiff(C, S);
+
+        else
+
+            C = 2 * ones(size(A));
+            S = R;
+
+        end
+    end
     
-    % C = double(C);
+    C = double(C);
     
     %--------------------------------------------------------------------------
     % Cria variáveis de saída

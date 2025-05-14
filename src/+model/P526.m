@@ -47,10 +47,6 @@ classdef P526 < model.PropagationBase
             % calcula o array de alturas adicional conforme a classificação
             % de clutter REC P1812.7 seção 3.2.1, tabela 2
             alturas_clutter = perfil_clutter;
-            alturas_clutter(ismember(alturas_clutter, [1 2])) = 0;
-            alturas_clutter(alturas_clutter == 3) = 10;
-            alturas_clutter(alturas_clutter == 4) = 15;
-            alturas_clutter(alturas_clutter == 5) = 20;
 
             idx = size(perfil_distancia, 2);
 
