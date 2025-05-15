@@ -41,3 +41,6 @@ resources/*
 
 # tif files
 tests/data/*.tif
+
+deploy/desktop/
+deploy/webapp/
