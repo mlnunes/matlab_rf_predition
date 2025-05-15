@@ -1,5 +1,5 @@
 {
-    "version": 0.02,
+    "version": 0.03,
     "operationMode": {
         "Debug": false,
         "Dock": false,
@@ -26,6 +26,25 @@
     "Image": {
         "Format": "jpeg",
         "Resolution": 120
+    },
+    "propagation": {
+        "model": [
+            {
+                "name": "COST-231/Hata",
+                "description": "...",
+                "constraints": "..."
+            },
+            {
+                "name": "ITU P526",
+                "description": "...",
+                "constraints": "..."
+            },
+            {
+                "name": "ITU P1812",
+                "description": "...",
+                "constraints": "..."
+            }
+        ]
     },
     "Plot": {
         "Axes": {

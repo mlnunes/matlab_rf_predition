@@ -5,6 +5,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
         UIFigure                       matlab.ui.Figure
         GridLayout                     matlab.ui.container.GridLayout
         toolGrid                       matlab.ui.container.GridLayout
+        tool_ExportButton_2            matlab.ui.control.Image
         tool_tableNRowsIcon            matlab.ui.control.Image
         tool_tableNRows                matlab.ui.control.Label
         tool_ExportButton              matlab.ui.control.Image
@@ -24,6 +25,9 @@ classdef winPropagation_exported < matlab.apps.AppBase
         plotPanel                      matlab.ui.container.Panel
         panelGrid                      matlab.ui.container.GridLayout
         menu_MainGrid                  matlab.ui.container.GridLayout
+        menu_Button4Grid               matlab.ui.container.GridLayout
+        menu_Button4Icon               matlab.ui.control.Image
+        menu_Button4Label              matlab.ui.control.Label
         menu_Button3Grid               matlab.ui.container.GridLayout
         menu_Button3Icon               matlab.ui.control.Image
         menu_Button3Label              matlab.ui.control.Label
@@ -141,6 +145,53 @@ classdef winPropagation_exported < matlab.apps.AppBase
         config_geoAxesSublabel         matlab.ui.control.Label
         config_Refresh                 matlab.ui.control.Image
         config_geoAxesLabel            matlab.ui.control.Label
+        Tab_4                          matlab.ui.container.Tab
+        GridLayout2                    matlab.ui.container.GridLayout
+        RaiokmEditField                matlab.ui.control.NumericEditField
+        RaiokmEditFieldLabel           matlab.ui.control.Label
+        Panel_3                        matlab.ui.container.Panel
+        GridLayout4                    matlab.ui.container.GridLayout
+        IdentificaoEditField           matlab.ui.control.EditField
+        IdentificaoEditFieldLabel      matlab.ui.control.Label
+        Panel_4                        matlab.ui.container.Panel
+        GridLayout5                    matlab.ui.container.GridLayout
+        AzimuteEditField               matlab.ui.control.NumericEditField
+        AzimuteEditFieldLabel          matlab.ui.control.Label
+        TiltEditField                  matlab.ui.control.NumericEditField
+        TiltEditFieldLabel             matlab.ui.control.Label
+        txAntennaButton                matlab.ui.control.Image
+        txAntenna                      matlab.ui.control.EditField
+        txAntennaLabel                 matlab.ui.control.Label
+        AlturaEditField_2              matlab.ui.control.NumericEditField
+        AlturaEditField_2Label         matlab.ui.control.Label
+        AntenaLabel                    matlab.ui.control.Label
+        PotnciaWattsEditField          matlab.ui.control.NumericEditField
+        PotnciaWattsEditFieldLabel     matlab.ui.control.Label
+        LongitudeEditField             matlab.ui.control.NumericEditField
+        LongitudeEditFieldLabel        matlab.ui.control.Label
+        LatitudeEditField              matlab.ui.control.NumericEditField
+        LatitudeEditFieldLabel         matlab.ui.control.Label
+        EstaoEditField                 matlab.ui.control.EditField
+        EstaoEditFieldLabel            matlab.ui.control.Label
+        FrequnciaMHzEditField          matlab.ui.control.NumericEditField
+        FrequnciaMHzEditFieldLabel     matlab.ui.control.Label
+        EstaotransmissoraLabel         matlab.ui.control.Label
+        EstaoreceptoraLabel            matlab.ui.control.Label
+        Panel_2                        matlab.ui.container.Panel
+        GridLayout3                    matlab.ui.container.GridLayout
+        rxAntennaButton                matlab.ui.control.Image
+        AntenaEditField_2              matlab.ui.control.EditField
+        AntenaEditField_2Label         matlab.ui.control.Label
+        AlturaEditField                matlab.ui.control.NumericEditField
+        AlturaEditFieldLabel           matlab.ui.control.Label
+        clutterButton                  matlab.ui.control.Image
+        ClutterEditField               matlab.ui.control.EditField
+        ClutterEditFieldLabel          matlab.ui.control.Label
+        relevoButton                   matlab.ui.control.Image
+        RelevoEditField                matlab.ui.control.EditField
+        RelevoEditFieldLabel           matlab.ui.control.Label
+        ModeloDropDown                 matlab.ui.control.DropDown
+        ModeloDropDownLabel            matlab.ui.control.Label
         filter_ContextMenu             matlab.ui.container.ContextMenu
         filter_delButton               matlab.ui.container.Menu
         filter_delAllButton            matlab.ui.container.Menu
@@ -224,7 +275,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
         function jsBackDoor_Customizations(app, tabIndex)
             persistent customizationStatus
             if isempty(customizationStatus)
-                customizationStatus = [false, false, false];
+                customizationStatus = [false, false, false, false];
             end
 
             switch tabIndex
@@ -235,7 +286,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
                         sendEventToHTMLSource(app.jsBackDoor, 'startup', app.mainApp.executionMode);
                         app.progressDialog = ccTools.ProgressDialog(app.jsBackDoor);                        
                     end
-                    customizationStatus = [false, false, false];
+                    customizationStatus = [false, false, false, false];
 
                 otherwise
                     if customizationStatus(tabIndex)
@@ -271,6 +322,9 @@ classdef winPropagation_exported < matlab.apps.AppBase
                             filter_TreeBuilding(app)
                             
                         case 3 % CONFIGURAÇÕES GERAIS
+                            % ...
+
+                        case 4 % ABA DE TESTES (PREDIÇÃO)
                             % ...
                     end
             end
@@ -422,6 +476,9 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.misc_ElevationAPISource.Value    = app.General.Elevation.Server;
             app.misc_ElevationNPoints.Value      = num2str(app.General.Elevation.Points);
             app.misc_ElevationForceSearch.Value  = app.General.Elevation.ForceSearch;
+
+            % Aba de testes de Predição:
+            app.ModeloDropDown.Items = {app.General.propagation.model.name};
         end
     end
 
@@ -1351,6 +1408,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
                 app.rfDataHubAnnotation = rfDataHubAnnotation;
             end
     
+            app.UIFigure.Position(4) = 660;
             app.GridLayout.ColumnWidth(7:10) = {0,0,0,0};
     
             % Em sendo executado como módulo do appAnalise, o app pode
@@ -1376,7 +1434,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
         end
 
         % Image clicked function: menu_Button1Icon, menu_Button2Icon, 
-        % ...and 1 other component
+        % ...and 2 other components
         function general_ControlPanelSelectionChanged(app, event)
             
             idx = str2double(event.Source.Tag);
@@ -1976,6 +2034,38 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.config_Refresh.Visible = 0;
 
         end
+
+        % Image clicked function: clutterButton, relevoButton, 
+        % ...and 2 other components
+        function ImageClicked(app, event)
+            
+            [fileName, filePath] = uigetfile();
+            figure(app.UIFigure)
+
+            if isequal(fileName, 0)
+                return
+            end
+            fileFullName = fullfile(filePath, fileName);
+
+            switch event.Source
+                case app.relevoButton
+                    app.RelevoEditField.Value = fileFullName;
+                case app.clutterButton
+                    app.ClutterEditField.Value = fileFullName;
+                case app.rxAntennaButton
+                    app.AntenaEditField_2.Value = fileFullName;
+                case app.txAntennaButton
+                    app.txAntenna.Value = fileFullName;
+            end
+
+        end
+
+        % Value changed function: EstaoEditField
+        function EstaoEditFieldValueChanged(app, event)
+            
+            value = app.EstaoEditField.Value;
+            
+        end
     end
 
     % Component initialization
@@ -1991,7 +2081,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
             if isempty(Container)
                 app.UIFigure = uifigure('Visible', 'off');
                 app.UIFigure.AutoResizeChildren = 'off';
-                app.UIFigure.Position = [100 100 1244 660];
+                app.UIFigure.Position = [100 100 1244 860];
                 app.UIFigure.Name = 'rfPreview';
                 app.UIFigure.Icon = 'icon_48.png';
                 app.UIFigure.CloseRequestFcn = createCallbackFcn(app, @closeFcn, true);
@@ -2917,9 +3007,350 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.misc_ElevationForceSearch.Layout.Row = 3;
             app.misc_ElevationForceSearch.Layout.Column = [1 2];
 
+            % Create Tab_4
+            app.Tab_4 = uitab(app.ControlTabGroup);
+
+            % Create GridLayout2
+            app.GridLayout2 = uigridlayout(app.Tab_4);
+            app.GridLayout2.ColumnWidth = {'1x', 70, 16};
+            app.GridLayout2.RowHeight = {17, 22, 17, 22, 17, 22, 17, 64, 17, '1x'};
+            app.GridLayout2.RowSpacing = 5;
+            app.GridLayout2.BackgroundColor = [1 1 1];
+
+            % Create ModeloDropDownLabel
+            app.ModeloDropDownLabel = uilabel(app.GridLayout2);
+            app.ModeloDropDownLabel.VerticalAlignment = 'bottom';
+            app.ModeloDropDownLabel.FontSize = 10;
+            app.ModeloDropDownLabel.Layout.Row = 1;
+            app.ModeloDropDownLabel.Layout.Column = 1;
+            app.ModeloDropDownLabel.Text = 'Modelo:';
+
+            % Create ModeloDropDown
+            app.ModeloDropDown = uidropdown(app.GridLayout2);
+            app.ModeloDropDown.Items = {};
+            app.ModeloDropDown.FontSize = 11;
+            app.ModeloDropDown.BackgroundColor = [1 1 1];
+            app.ModeloDropDown.Layout.Row = 2;
+            app.ModeloDropDown.Layout.Column = 1;
+            app.ModeloDropDown.Value = {};
+
+            % Create RelevoEditFieldLabel
+            app.RelevoEditFieldLabel = uilabel(app.GridLayout2);
+            app.RelevoEditFieldLabel.VerticalAlignment = 'bottom';
+            app.RelevoEditFieldLabel.FontSize = 10;
+            app.RelevoEditFieldLabel.Layout.Row = 3;
+            app.RelevoEditFieldLabel.Layout.Column = 1;
+            app.RelevoEditFieldLabel.Text = 'Relevo:';
+
+            % Create RelevoEditField
+            app.RelevoEditField = uieditfield(app.GridLayout2, 'text');
+            app.RelevoEditField.Editable = 'off';
+            app.RelevoEditField.FontSize = 11;
+            app.RelevoEditField.Layout.Row = 4;
+            app.RelevoEditField.Layout.Column = [1 3];
+
+            % Create relevoButton
+            app.relevoButton = uiimage(app.GridLayout2);
+            app.relevoButton.ImageClickedFcn = createCallbackFcn(app, @ImageClicked, true);
+            app.relevoButton.Layout.Row = 3;
+            app.relevoButton.Layout.Column = 3;
+            app.relevoButton.VerticalAlignment = 'bottom';
+            app.relevoButton.ImageSource = 'OpenFile_36x36.png';
+
+            % Create ClutterEditFieldLabel
+            app.ClutterEditFieldLabel = uilabel(app.GridLayout2);
+            app.ClutterEditFieldLabel.VerticalAlignment = 'bottom';
+            app.ClutterEditFieldLabel.FontSize = 10;
+            app.ClutterEditFieldLabel.Layout.Row = 5;
+            app.ClutterEditFieldLabel.Layout.Column = 1;
+            app.ClutterEditFieldLabel.Text = 'Clutter:';
+
+            % Create ClutterEditField
+            app.ClutterEditField = uieditfield(app.GridLayout2, 'text');
+            app.ClutterEditField.Editable = 'off';
+            app.ClutterEditField.FontSize = 11;
+            app.ClutterEditField.Layout.Row = 6;
+            app.ClutterEditField.Layout.Column = [1 3];
+
+            % Create clutterButton
+            app.clutterButton = uiimage(app.GridLayout2);
+            app.clutterButton.ImageClickedFcn = createCallbackFcn(app, @ImageClicked, true);
+            app.clutterButton.Layout.Row = 5;
+            app.clutterButton.Layout.Column = 3;
+            app.clutterButton.VerticalAlignment = 'bottom';
+            app.clutterButton.ImageSource = 'OpenFile_36x36.png';
+
+            % Create Panel_2
+            app.Panel_2 = uipanel(app.GridLayout2);
+            app.Panel_2.Layout.Row = 8;
+            app.Panel_2.Layout.Column = [1 3];
+
+            % Create GridLayout3
+            app.GridLayout3 = uigridlayout(app.Panel_2);
+            app.GridLayout3.ColumnWidth = {90, '1x', 16};
+            app.GridLayout3.RowHeight = {17, 22};
+            app.GridLayout3.RowSpacing = 5;
+            app.GridLayout3.BackgroundColor = [1 1 1];
+
+            % Create AlturaEditFieldLabel
+            app.AlturaEditFieldLabel = uilabel(app.GridLayout3);
+            app.AlturaEditFieldLabel.VerticalAlignment = 'bottom';
+            app.AlturaEditFieldLabel.FontSize = 10;
+            app.AlturaEditFieldLabel.Layout.Row = 1;
+            app.AlturaEditFieldLabel.Layout.Column = 1;
+            app.AlturaEditFieldLabel.Text = 'Altura:';
+
+            % Create AlturaEditField
+            app.AlturaEditField = uieditfield(app.GridLayout3, 'numeric');
+            app.AlturaEditField.Limits = [0 Inf];
+            app.AlturaEditField.FontSize = 11;
+            app.AlturaEditField.Layout.Row = 2;
+            app.AlturaEditField.Layout.Column = 1;
+            app.AlturaEditField.Value = 1.6;
+
+            % Create AntenaEditField_2Label
+            app.AntenaEditField_2Label = uilabel(app.GridLayout3);
+            app.AntenaEditField_2Label.VerticalAlignment = 'bottom';
+            app.AntenaEditField_2Label.FontSize = 10;
+            app.AntenaEditField_2Label.Layout.Row = 1;
+            app.AntenaEditField_2Label.Layout.Column = 2;
+            app.AntenaEditField_2Label.Text = 'Antena:';
+
+            % Create AntenaEditField_2
+            app.AntenaEditField_2 = uieditfield(app.GridLayout3, 'text');
+            app.AntenaEditField_2.Editable = 'off';
+            app.AntenaEditField_2.FontSize = 11;
+            app.AntenaEditField_2.Layout.Row = 2;
+            app.AntenaEditField_2.Layout.Column = [2 3];
+
+            % Create rxAntennaButton
+            app.rxAntennaButton = uiimage(app.GridLayout3);
+            app.rxAntennaButton.ImageClickedFcn = createCallbackFcn(app, @ImageClicked, true);
+            app.rxAntennaButton.Layout.Row = 1;
+            app.rxAntennaButton.Layout.Column = 3;
+            app.rxAntennaButton.VerticalAlignment = 'bottom';
+            app.rxAntennaButton.ImageSource = 'OpenFile_36x36.png';
+
+            % Create EstaoreceptoraLabel
+            app.EstaoreceptoraLabel = uilabel(app.GridLayout2);
+            app.EstaoreceptoraLabel.VerticalAlignment = 'bottom';
+            app.EstaoreceptoraLabel.FontSize = 10;
+            app.EstaoreceptoraLabel.Layout.Row = 7;
+            app.EstaoreceptoraLabel.Layout.Column = 1;
+            app.EstaoreceptoraLabel.Text = 'Estação receptora:';
+
+            % Create EstaotransmissoraLabel
+            app.EstaotransmissoraLabel = uilabel(app.GridLayout2);
+            app.EstaotransmissoraLabel.VerticalAlignment = 'bottom';
+            app.EstaotransmissoraLabel.FontSize = 10;
+            app.EstaotransmissoraLabel.Layout.Row = 9;
+            app.EstaotransmissoraLabel.Layout.Column = 1;
+            app.EstaotransmissoraLabel.Text = 'Estação transmissora:';
+
+            % Create Panel_3
+            app.Panel_3 = uipanel(app.GridLayout2);
+            app.Panel_3.Layout.Row = 10;
+            app.Panel_3.Layout.Column = [1 3];
+
+            % Create GridLayout4
+            app.GridLayout4 = uigridlayout(app.Panel_3);
+            app.GridLayout4.RowHeight = {17, 22, 17, 22, 17, 22, 17, 22, 17, '1x'};
+            app.GridLayout4.RowSpacing = 5;
+            app.GridLayout4.BackgroundColor = [1 1 1];
+
+            % Create FrequnciaMHzEditFieldLabel
+            app.FrequnciaMHzEditFieldLabel = uilabel(app.GridLayout4);
+            app.FrequnciaMHzEditFieldLabel.VerticalAlignment = 'bottom';
+            app.FrequnciaMHzEditFieldLabel.FontSize = 10;
+            app.FrequnciaMHzEditFieldLabel.Layout.Row = 5;
+            app.FrequnciaMHzEditFieldLabel.Layout.Column = 1;
+            app.FrequnciaMHzEditFieldLabel.Text = 'Frequência (MHz):';
+
+            % Create FrequnciaMHzEditField
+            app.FrequnciaMHzEditField = uieditfield(app.GridLayout4, 'numeric');
+            app.FrequnciaMHzEditField.FontSize = 11;
+            app.FrequnciaMHzEditField.Layout.Row = 6;
+            app.FrequnciaMHzEditField.Layout.Column = 1;
+
+            % Create EstaoEditFieldLabel
+            app.EstaoEditFieldLabel = uilabel(app.GridLayout4);
+            app.EstaoEditFieldLabel.VerticalAlignment = 'bottom';
+            app.EstaoEditFieldLabel.FontSize = 10;
+            app.EstaoEditFieldLabel.Layout.Row = 1;
+            app.EstaoEditFieldLabel.Layout.Column = 1;
+            app.EstaoEditFieldLabel.Text = 'Estação:';
+
+            % Create EstaoEditField
+            app.EstaoEditField = uieditfield(app.GridLayout4, 'text');
+            app.EstaoEditField.ValueChangedFcn = createCallbackFcn(app, @EstaoEditFieldValueChanged, true);
+            app.EstaoEditField.FontSize = 11;
+            app.EstaoEditField.Layout.Row = 2;
+            app.EstaoEditField.Layout.Column = 1;
+
+            % Create LatitudeEditFieldLabel
+            app.LatitudeEditFieldLabel = uilabel(app.GridLayout4);
+            app.LatitudeEditFieldLabel.VerticalAlignment = 'bottom';
+            app.LatitudeEditFieldLabel.FontSize = 10;
+            app.LatitudeEditFieldLabel.Layout.Row = 7;
+            app.LatitudeEditFieldLabel.Layout.Column = 1;
+            app.LatitudeEditFieldLabel.Text = 'Latitude:';
+
+            % Create LatitudeEditField
+            app.LatitudeEditField = uieditfield(app.GridLayout4, 'numeric');
+            app.LatitudeEditField.FontSize = 11;
+            app.LatitudeEditField.Layout.Row = 8;
+            app.LatitudeEditField.Layout.Column = 1;
+
+            % Create LongitudeEditFieldLabel
+            app.LongitudeEditFieldLabel = uilabel(app.GridLayout4);
+            app.LongitudeEditFieldLabel.VerticalAlignment = 'bottom';
+            app.LongitudeEditFieldLabel.FontSize = 10;
+            app.LongitudeEditFieldLabel.Layout.Row = 7;
+            app.LongitudeEditFieldLabel.Layout.Column = 2;
+            app.LongitudeEditFieldLabel.Text = 'Longitude:';
+
+            % Create LongitudeEditField
+            app.LongitudeEditField = uieditfield(app.GridLayout4, 'numeric');
+            app.LongitudeEditField.FontSize = 11;
+            app.LongitudeEditField.Layout.Row = 8;
+            app.LongitudeEditField.Layout.Column = 2;
+
+            % Create PotnciaWattsEditFieldLabel
+            app.PotnciaWattsEditFieldLabel = uilabel(app.GridLayout4);
+            app.PotnciaWattsEditFieldLabel.VerticalAlignment = 'bottom';
+            app.PotnciaWattsEditFieldLabel.FontSize = 10;
+            app.PotnciaWattsEditFieldLabel.Layout.Row = 5;
+            app.PotnciaWattsEditFieldLabel.Layout.Column = 2;
+            app.PotnciaWattsEditFieldLabel.Text = 'Potência (Watts):';
+
+            % Create PotnciaWattsEditField
+            app.PotnciaWattsEditField = uieditfield(app.GridLayout4, 'numeric');
+            app.PotnciaWattsEditField.FontSize = 11;
+            app.PotnciaWattsEditField.Layout.Row = 6;
+            app.PotnciaWattsEditField.Layout.Column = 2;
+
+            % Create AntenaLabel
+            app.AntenaLabel = uilabel(app.GridLayout4);
+            app.AntenaLabel.VerticalAlignment = 'bottom';
+            app.AntenaLabel.FontSize = 10;
+            app.AntenaLabel.Layout.Row = 9;
+            app.AntenaLabel.Layout.Column = 1;
+            app.AntenaLabel.Text = 'Antena:';
+
+            % Create Panel_4
+            app.Panel_4 = uipanel(app.GridLayout4);
+            app.Panel_4.Layout.Row = 10;
+            app.Panel_4.Layout.Column = [1 2];
+
+            % Create GridLayout5
+            app.GridLayout5 = uigridlayout(app.Panel_4);
+            app.GridLayout5.ColumnWidth = {76, 76, 55, 16};
+            app.GridLayout5.RowHeight = {17, 22, 17, 22};
+            app.GridLayout5.RowSpacing = 5;
+            app.GridLayout5.BackgroundColor = [1 1 1];
+
+            % Create AlturaEditField_2Label
+            app.AlturaEditField_2Label = uilabel(app.GridLayout5);
+            app.AlturaEditField_2Label.VerticalAlignment = 'bottom';
+            app.AlturaEditField_2Label.FontSize = 10;
+            app.AlturaEditField_2Label.Layout.Row = 1;
+            app.AlturaEditField_2Label.Layout.Column = 1;
+            app.AlturaEditField_2Label.Text = 'Altura:';
+
+            % Create AlturaEditField_2
+            app.AlturaEditField_2 = uieditfield(app.GridLayout5, 'numeric');
+            app.AlturaEditField_2.Limits = [0 Inf];
+            app.AlturaEditField_2.FontSize = 11;
+            app.AlturaEditField_2.Layout.Row = 2;
+            app.AlturaEditField_2.Layout.Column = 1;
+            app.AlturaEditField_2.Value = 1.6;
+
+            % Create txAntennaLabel
+            app.txAntennaLabel = uilabel(app.GridLayout5);
+            app.txAntennaLabel.VerticalAlignment = 'bottom';
+            app.txAntennaLabel.FontSize = 10;
+            app.txAntennaLabel.Layout.Row = 3;
+            app.txAntennaLabel.Layout.Column = [1 3];
+            app.txAntennaLabel.Text = 'Arquivo:';
+
+            % Create txAntenna
+            app.txAntenna = uieditfield(app.GridLayout5, 'text');
+            app.txAntenna.Editable = 'off';
+            app.txAntenna.FontSize = 11;
+            app.txAntenna.Layout.Row = 4;
+            app.txAntenna.Layout.Column = [1 4];
+
+            % Create txAntennaButton
+            app.txAntennaButton = uiimage(app.GridLayout5);
+            app.txAntennaButton.ImageClickedFcn = createCallbackFcn(app, @ImageClicked, true);
+            app.txAntennaButton.Layout.Row = 3;
+            app.txAntennaButton.Layout.Column = 4;
+            app.txAntennaButton.VerticalAlignment = 'bottom';
+            app.txAntennaButton.ImageSource = 'OpenFile_36x36.png';
+
+            % Create TiltEditFieldLabel
+            app.TiltEditFieldLabel = uilabel(app.GridLayout5);
+            app.TiltEditFieldLabel.VerticalAlignment = 'bottom';
+            app.TiltEditFieldLabel.FontSize = 10;
+            app.TiltEditFieldLabel.Layout.Row = 1;
+            app.TiltEditFieldLabel.Layout.Column = 2;
+            app.TiltEditFieldLabel.Text = 'Tilt:';
+
+            % Create TiltEditField
+            app.TiltEditField = uieditfield(app.GridLayout5, 'numeric');
+            app.TiltEditField.Limits = [-90 90];
+            app.TiltEditField.FontSize = 11;
+            app.TiltEditField.Layout.Row = 2;
+            app.TiltEditField.Layout.Column = 2;
+
+            % Create AzimuteEditFieldLabel
+            app.AzimuteEditFieldLabel = uilabel(app.GridLayout5);
+            app.AzimuteEditFieldLabel.VerticalAlignment = 'bottom';
+            app.AzimuteEditFieldLabel.FontSize = 10;
+            app.AzimuteEditFieldLabel.Layout.Row = 1;
+            app.AzimuteEditFieldLabel.Layout.Column = 3;
+            app.AzimuteEditFieldLabel.Text = 'Azimute:';
+
+            % Create AzimuteEditField
+            app.AzimuteEditField = uieditfield(app.GridLayout5, 'numeric');
+            app.AzimuteEditField.Limits = [0 360];
+            app.AzimuteEditField.FontSize = 11;
+            app.AzimuteEditField.Layout.Row = 2;
+            app.AzimuteEditField.Layout.Column = [3 4];
+
+            % Create IdentificaoEditFieldLabel
+            app.IdentificaoEditFieldLabel = uilabel(app.GridLayout4);
+            app.IdentificaoEditFieldLabel.VerticalAlignment = 'bottom';
+            app.IdentificaoEditFieldLabel.FontSize = 10;
+            app.IdentificaoEditFieldLabel.Layout.Row = 3;
+            app.IdentificaoEditFieldLabel.Layout.Column = 1;
+            app.IdentificaoEditFieldLabel.Text = 'Identificação:';
+
+            % Create IdentificaoEditField
+            app.IdentificaoEditField = uieditfield(app.GridLayout4, 'text');
+            app.IdentificaoEditField.FontSize = 11;
+            app.IdentificaoEditField.Layout.Row = 4;
+            app.IdentificaoEditField.Layout.Column = [1 2];
+
+            % Create RaiokmEditFieldLabel
+            app.RaiokmEditFieldLabel = uilabel(app.GridLayout2);
+            app.RaiokmEditFieldLabel.VerticalAlignment = 'bottom';
+            app.RaiokmEditFieldLabel.FontSize = 10;
+            app.RaiokmEditFieldLabel.Layout.Row = 1;
+            app.RaiokmEditFieldLabel.Layout.Column = 2;
+            app.RaiokmEditFieldLabel.Text = 'Raio (km):';
+
+            % Create RaiokmEditField
+            app.RaiokmEditField = uieditfield(app.GridLayout2, 'numeric');
+            app.RaiokmEditField.Limits = [0 Inf];
+            app.RaiokmEditField.FontSize = 11;
+            app.RaiokmEditField.Layout.Row = 2;
+            app.RaiokmEditField.Layout.Column = [2 3];
+            app.RaiokmEditField.Value = 5;
+
             % Create menu_MainGrid
             app.menu_MainGrid = uigridlayout(app.panelGrid);
-            app.menu_MainGrid.ColumnWidth = {'1x', 22, 22};
+            app.menu_MainGrid.ColumnWidth = {'1x', 22, 22, 22};
             app.menu_MainGrid.RowHeight = {'1x', 3};
             app.menu_MainGrid.ColumnSpacing = 2;
             app.menu_MainGrid.RowSpacing = 0;
@@ -3016,6 +3447,33 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.menu_Button3Icon.HorizontalAlignment = 'left';
             app.menu_Button3Icon.ImageSource = 'Settings_18.png';
 
+            % Create menu_Button4Grid
+            app.menu_Button4Grid = uigridlayout(app.menu_MainGrid);
+            app.menu_Button4Grid.ColumnWidth = {18, 0};
+            app.menu_Button4Grid.RowHeight = {'1x'};
+            app.menu_Button4Grid.ColumnSpacing = 3;
+            app.menu_Button4Grid.Padding = [2 0 0 0];
+            app.menu_Button4Grid.Layout.Row = 1;
+            app.menu_Button4Grid.Layout.Column = 4;
+            app.menu_Button4Grid.BackgroundColor = [0.749 0.749 0.749];
+
+            % Create menu_Button4Label
+            app.menu_Button4Label = uilabel(app.menu_Button4Grid);
+            app.menu_Button4Label.FontSize = 11;
+            app.menu_Button4Label.Layout.Row = 1;
+            app.menu_Button4Label.Layout.Column = 2;
+            app.menu_Button4Label.Text = 'CONFIGURAÇÕES GERAIS';
+
+            % Create menu_Button4Icon
+            app.menu_Button4Icon = uiimage(app.menu_Button4Grid);
+            app.menu_Button4Icon.ScaleMethod = 'none';
+            app.menu_Button4Icon.ImageClickedFcn = createCallbackFcn(app, @general_ControlPanelSelectionChanged, true);
+            app.menu_Button4Icon.Tag = '4';
+            app.menu_Button4Icon.Layout.Row = 1;
+            app.menu_Button4Icon.Layout.Column = [1 2];
+            app.menu_Button4Icon.HorizontalAlignment = 'left';
+            app.menu_Button4Icon.ImageSource = 'Report_18.png';
+
             % Create plotPanel
             app.plotPanel = uipanel(app.GridLayout);
             app.plotPanel.BorderType = 'none';
@@ -3100,7 +3558,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
 
             % Create toolGrid
             app.toolGrid = uigridlayout(app.GridLayout);
-            app.toolGrid.ColumnWidth = {22, 22, 22, 22, 5, 22, '1x', 18};
+            app.toolGrid.ColumnWidth = {22, 22, 22, 22, 5, 22, 22, '1x', 18};
             app.toolGrid.RowHeight = {4, 17, 2};
             app.toolGrid.ColumnSpacing = 5;
             app.toolGrid.RowSpacing = 0;
@@ -3167,7 +3625,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.tool_tableNRows.FontSize = 10;
             app.tool_tableNRows.FontColor = [0.6 0.6 0.6];
             app.tool_tableNRows.Layout.Row = [1 3];
-            app.tool_tableNRows.Layout.Column = 7;
+            app.tool_tableNRows.Layout.Column = 8;
             app.tool_tableNRows.Text = '';
 
             % Create tool_tableNRowsIcon
@@ -3175,8 +3633,14 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.tool_tableNRowsIcon.ScaleMethod = 'none';
             app.tool_tableNRowsIcon.Enable = 'off';
             app.tool_tableNRowsIcon.Layout.Row = 2;
-            app.tool_tableNRowsIcon.Layout.Column = 8;
+            app.tool_tableNRowsIcon.Layout.Column = 9;
             app.tool_tableNRowsIcon.ImageSource = 'Filter_18.png';
+
+            % Create tool_ExportButton_2
+            app.tool_ExportButton_2 = uiimage(app.toolGrid);
+            app.tool_ExportButton_2.Layout.Row = 2;
+            app.tool_ExportButton_2.Layout.Column = 7;
+            app.tool_ExportButton_2.ImageSource = 'play_32.png';
 
             % Create filter_ContextMenu
             app.filter_ContextMenu = uicontextmenu(app.UIFigure);
