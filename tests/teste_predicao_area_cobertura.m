@@ -1,14 +1,19 @@
 % Realiza a predição de cobertura de uma área a partir da escolha de um
 % arquivo de configuração
-aux = dir ('tests/config/');
+
+fileFolder = fileparts(mfilename('fullpath'));
+aux = dir(fullfile(fileFolder, 'config'));
 aux = {aux.name};
 
 arquivos = aux(3:end);
 
 config = menu('Escolha uma configuração para rodar a predição:', arquivos);
+arquivoConfig = fullfile(fileFolder, 'config', arquivos{config});
 
-arquivoConfig = strcat('tests/config/', arquivos{config});
-[lb, prx] = utils.predicao_area(arquivoConfig);
+raio_metros   = 1000;
+run(arquivoConfig);
+
+[lb, prx] = utils.predicao_area(raio_metros, dadosPredicao);
 
 graf = {'Atenuação', 'Nível de sinal', 'Não'};
 grafico = menu('Deseja ver o gráfico do resultado?', graf);

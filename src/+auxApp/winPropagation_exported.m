@@ -5,7 +5,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
         UIFigure                       matlab.ui.Figure
         GridLayout                     matlab.ui.container.GridLayout
         toolGrid                       matlab.ui.container.GridLayout
-        tool_ExportButton_2            matlab.ui.control.Image
+        TESTEButton                    matlab.ui.control.Button
         tool_tableNRowsIcon            matlab.ui.control.Image
         tool_tableNRows                matlab.ui.control.Label
         tool_ExportButton              matlab.ui.control.Image
@@ -147,51 +147,51 @@ classdef winPropagation_exported < matlab.apps.AppBase
         config_geoAxesLabel            matlab.ui.control.Label
         Tab_4                          matlab.ui.container.Tab
         GridLayout2                    matlab.ui.container.GridLayout
-        RaiokmEditField                matlab.ui.control.NumericEditField
-        RaiokmEditFieldLabel           matlab.ui.control.Label
         Panel_3                        matlab.ui.container.Panel
         GridLayout4                    matlab.ui.container.GridLayout
-        IdentificaoEditField           matlab.ui.control.EditField
-        IdentificaoEditFieldLabel      matlab.ui.control.Label
         Panel_4                        matlab.ui.container.Panel
         GridLayout5                    matlab.ui.container.GridLayout
+        txAntenna                      matlab.ui.control.EditField
+        txAntennaButton                matlab.ui.control.Image
+        txAntennaLabel                 matlab.ui.control.Label
         AzimuteEditField               matlab.ui.control.NumericEditField
         AzimuteEditFieldLabel          matlab.ui.control.Label
         TiltEditField                  matlab.ui.control.NumericEditField
         TiltEditFieldLabel             matlab.ui.control.Label
-        txAntennaButton                matlab.ui.control.Image
-        txAntenna                      matlab.ui.control.EditField
-        txAntennaLabel                 matlab.ui.control.Label
         AlturaEditField_2              matlab.ui.control.NumericEditField
         AlturaEditField_2Label         matlab.ui.control.Label
         AntenaLabel                    matlab.ui.control.Label
-        PotnciaWattsEditField          matlab.ui.control.NumericEditField
-        PotnciaWattsEditFieldLabel     matlab.ui.control.Label
         LongitudeEditField             matlab.ui.control.NumericEditField
         LongitudeEditFieldLabel        matlab.ui.control.Label
         LatitudeEditField              matlab.ui.control.NumericEditField
         LatitudeEditFieldLabel         matlab.ui.control.Label
-        EstaoEditField                 matlab.ui.control.EditField
-        EstaoEditFieldLabel            matlab.ui.control.Label
+        PotnciaWattsEditField          matlab.ui.control.NumericEditField
+        PotnciaWattsEditFieldLabel     matlab.ui.control.Label
         FrequnciaMHzEditField          matlab.ui.control.NumericEditField
         FrequnciaMHzEditFieldLabel     matlab.ui.control.Label
+        IdentificaoEditField           matlab.ui.control.EditField
+        IdentificaoEditFieldLabel      matlab.ui.control.Label
+        EstaoEditField                 matlab.ui.control.EditField
+        EstaoEditFieldLabel            matlab.ui.control.Label
         EstaotransmissoraLabel         matlab.ui.control.Label
-        EstaoreceptoraLabel            matlab.ui.control.Label
         Panel_2                        matlab.ui.container.Panel
         GridLayout3                    matlab.ui.container.GridLayout
+        ArquivoantenaEditField         matlab.ui.control.EditField
         rxAntennaButton                matlab.ui.control.Image
-        AntenaEditField_2              matlab.ui.control.EditField
-        AntenaEditField_2Label         matlab.ui.control.Label
+        ArquivoantenaEditFieldLabel    matlab.ui.control.Label
         AlturaEditField                matlab.ui.control.NumericEditField
         AlturaEditFieldLabel           matlab.ui.control.Label
-        clutterButton                  matlab.ui.control.Image
+        EstaoreceptoraLabel            matlab.ui.control.Label
         ClutterEditField               matlab.ui.control.EditField
+        clutterButton                  matlab.ui.control.Image
         ClutterEditFieldLabel          matlab.ui.control.Label
-        relevoButton                   matlab.ui.control.Image
-        RelevoEditField                matlab.ui.control.EditField
-        RelevoEditFieldLabel           matlab.ui.control.Label
-        ModeloDropDown                 matlab.ui.control.DropDown
-        ModeloDropDownLabel            matlab.ui.control.Label
+        prop_terrain                   matlab.ui.control.EditField
+        prop_terrainButton             matlab.ui.control.Image
+        prop_terrainLabel              matlab.ui.control.Label
+        RaiometrosEditField            matlab.ui.control.NumericEditField
+        RaiometrosEditFieldLabel       matlab.ui.control.Label
+        prop_Model                     matlab.ui.control.DropDown
+        prop_ModelLabel                matlab.ui.control.Label
         filter_ContextMenu             matlab.ui.container.ContextMenu
         filter_delButton               matlab.ui.container.Menu
         filter_delAllButton            matlab.ui.container.Menu
@@ -478,7 +478,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.misc_ElevationForceSearch.Value  = app.General.Elevation.ForceSearch;
 
             % Aba de testes de Predição:
-            app.ModeloDropDown.Items = {app.General.propagation.model.name};
+            app.prop_Model.Items = {app.General.propagation.model.name};
         end
     end
 
@@ -2035,7 +2035,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
 
         end
 
-        % Image clicked function: clutterButton, relevoButton, 
+        % Image clicked function: clutterButton, prop_terrainButton, 
         % ...and 2 other components
         function ImageClicked(app, event)
             
@@ -2048,12 +2048,12 @@ classdef winPropagation_exported < matlab.apps.AppBase
             fileFullName = fullfile(filePath, fileName);
 
             switch event.Source
-                case app.relevoButton
-                    app.RelevoEditField.Value = fileFullName;
+                case app.prop_terrainButton
+                    app.prop_terrain.Value = fileFullName;
                 case app.clutterButton
                     app.ClutterEditField.Value = fileFullName;
                 case app.rxAntennaButton
-                    app.AntenaEditField_2.Value = fileFullName;
+                    app.ArquivoantenaEditField.Value = fileFullName;
                 case app.txAntennaButton
                     app.txAntenna.Value = fileFullName;
             end
@@ -2065,6 +2065,36 @@ classdef winPropagation_exported < matlab.apps.AppBase
             
             value = app.EstaoEditField.Value;
             
+        end
+
+        % Button pushed function: TESTEButton
+        function TESTEButtonPushed3(app, event)
+            
+            modelDict = dictionary(["COST-231/Hata", "ITU P526", "ITU P1812"], ...
+                                   ["Hata", "P.526", "P.1812"]);
+
+            raio_metros   = app.RaiometrosEditField.Value;
+            dadosPredicao = struct('modeloPredicao', modelDict(app.prop_Model.Value), ...
+                                   'frequencia',     app.FrequnciaMHzEditField.Value * 1e+6, ...
+                                   'dadosRelevo',    app.prop_terrain.Value, ...
+                                   'dadosClutter',   app.ClutterEditField.Value, ...
+                                   'Movel', struct('Antena', struct('Altura',  app.AlturaEditField.Value)), ...
+                                   'Base',  struct('Nome', app.IdentificaoEditField.Value, ...
+                                                   'Latitude', app.LatitudeEditField.Value, ...
+                                                   'Longitude', app.LongitudeEditField.Value, ...
+                                                   'Potencia', app.PotnciaWattsEditField.Value, ...
+                                                   'Antena', struct('Altura', app.AlturaEditField_2.Value, ....
+                                                                    'ArquivoDados', app.txAntenna.Value, ...
+                                                                    'Modelo', 'AIR6419', ...
+                                                                    'Funcao', 'TX', ...
+                                                                    'Azimute', app.AzimuteEditField.Value, ...
+                                                                    'tiltMecanico', app.TiltEditField.Value, ...
+                                                                    'Tipo', 'isotropic')));
+
+            [lb, prx] = utils.predicao_area(raio_metros, dadosPredicao);
+            utils.plota_predicao(dadosPredicao, lb, 1, app.UIAxes1);
+
+
         end
     end
 
@@ -3017,45 +3047,61 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.GridLayout2.RowSpacing = 5;
             app.GridLayout2.BackgroundColor = [1 1 1];
 
-            % Create ModeloDropDownLabel
-            app.ModeloDropDownLabel = uilabel(app.GridLayout2);
-            app.ModeloDropDownLabel.VerticalAlignment = 'bottom';
-            app.ModeloDropDownLabel.FontSize = 10;
-            app.ModeloDropDownLabel.Layout.Row = 1;
-            app.ModeloDropDownLabel.Layout.Column = 1;
-            app.ModeloDropDownLabel.Text = 'Modelo:';
+            % Create prop_ModelLabel
+            app.prop_ModelLabel = uilabel(app.GridLayout2);
+            app.prop_ModelLabel.VerticalAlignment = 'bottom';
+            app.prop_ModelLabel.FontSize = 10;
+            app.prop_ModelLabel.Layout.Row = 1;
+            app.prop_ModelLabel.Layout.Column = 1;
+            app.prop_ModelLabel.Text = 'Modelo:';
 
-            % Create ModeloDropDown
-            app.ModeloDropDown = uidropdown(app.GridLayout2);
-            app.ModeloDropDown.Items = {};
-            app.ModeloDropDown.FontSize = 11;
-            app.ModeloDropDown.BackgroundColor = [1 1 1];
-            app.ModeloDropDown.Layout.Row = 2;
-            app.ModeloDropDown.Layout.Column = 1;
-            app.ModeloDropDown.Value = {};
+            % Create prop_Model
+            app.prop_Model = uidropdown(app.GridLayout2);
+            app.prop_Model.Items = {};
+            app.prop_Model.FontSize = 11;
+            app.prop_Model.BackgroundColor = [1 1 1];
+            app.prop_Model.Layout.Row = 2;
+            app.prop_Model.Layout.Column = 1;
+            app.prop_Model.Value = {};
 
-            % Create RelevoEditFieldLabel
-            app.RelevoEditFieldLabel = uilabel(app.GridLayout2);
-            app.RelevoEditFieldLabel.VerticalAlignment = 'bottom';
-            app.RelevoEditFieldLabel.FontSize = 10;
-            app.RelevoEditFieldLabel.Layout.Row = 3;
-            app.RelevoEditFieldLabel.Layout.Column = 1;
-            app.RelevoEditFieldLabel.Text = 'Relevo:';
+            % Create RaiometrosEditFieldLabel
+            app.RaiometrosEditFieldLabel = uilabel(app.GridLayout2);
+            app.RaiometrosEditFieldLabel.VerticalAlignment = 'bottom';
+            app.RaiometrosEditFieldLabel.FontSize = 10;
+            app.RaiometrosEditFieldLabel.Layout.Row = 1;
+            app.RaiometrosEditFieldLabel.Layout.Column = 2;
+            app.RaiometrosEditFieldLabel.Text = 'Raio (metros):';
 
-            % Create RelevoEditField
-            app.RelevoEditField = uieditfield(app.GridLayout2, 'text');
-            app.RelevoEditField.Editable = 'off';
-            app.RelevoEditField.FontSize = 11;
-            app.RelevoEditField.Layout.Row = 4;
-            app.RelevoEditField.Layout.Column = [1 3];
+            % Create RaiometrosEditField
+            app.RaiometrosEditField = uieditfield(app.GridLayout2, 'numeric');
+            app.RaiometrosEditField.Limits = [0 Inf];
+            app.RaiometrosEditField.FontSize = 11;
+            app.RaiometrosEditField.Layout.Row = 2;
+            app.RaiometrosEditField.Layout.Column = [2 3];
+            app.RaiometrosEditField.Value = 5000;
 
-            % Create relevoButton
-            app.relevoButton = uiimage(app.GridLayout2);
-            app.relevoButton.ImageClickedFcn = createCallbackFcn(app, @ImageClicked, true);
-            app.relevoButton.Layout.Row = 3;
-            app.relevoButton.Layout.Column = 3;
-            app.relevoButton.VerticalAlignment = 'bottom';
-            app.relevoButton.ImageSource = 'OpenFile_36x36.png';
+            % Create prop_terrainLabel
+            app.prop_terrainLabel = uilabel(app.GridLayout2);
+            app.prop_terrainLabel.VerticalAlignment = 'bottom';
+            app.prop_terrainLabel.FontSize = 10;
+            app.prop_terrainLabel.Layout.Row = 3;
+            app.prop_terrainLabel.Layout.Column = 1;
+            app.prop_terrainLabel.Text = 'Relevo:';
+
+            % Create prop_terrainButton
+            app.prop_terrainButton = uiimage(app.GridLayout2);
+            app.prop_terrainButton.ImageClickedFcn = createCallbackFcn(app, @ImageClicked, true);
+            app.prop_terrainButton.Layout.Row = 3;
+            app.prop_terrainButton.Layout.Column = 3;
+            app.prop_terrainButton.VerticalAlignment = 'bottom';
+            app.prop_terrainButton.ImageSource = 'OpenFile_36x36.png';
+
+            % Create prop_terrain
+            app.prop_terrain = uieditfield(app.GridLayout2, 'text');
+            app.prop_terrain.Editable = 'off';
+            app.prop_terrain.FontSize = 11;
+            app.prop_terrain.Layout.Row = 4;
+            app.prop_terrain.Layout.Column = [1 3];
 
             % Create ClutterEditFieldLabel
             app.ClutterEditFieldLabel = uilabel(app.GridLayout2);
@@ -3065,13 +3111,6 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.ClutterEditFieldLabel.Layout.Column = 1;
             app.ClutterEditFieldLabel.Text = 'Clutter:';
 
-            % Create ClutterEditField
-            app.ClutterEditField = uieditfield(app.GridLayout2, 'text');
-            app.ClutterEditField.Editable = 'off';
-            app.ClutterEditField.FontSize = 11;
-            app.ClutterEditField.Layout.Row = 6;
-            app.ClutterEditField.Layout.Column = [1 3];
-
             % Create clutterButton
             app.clutterButton = uiimage(app.GridLayout2);
             app.clutterButton.ImageClickedFcn = createCallbackFcn(app, @ImageClicked, true);
@@ -3079,6 +3118,21 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.clutterButton.Layout.Column = 3;
             app.clutterButton.VerticalAlignment = 'bottom';
             app.clutterButton.ImageSource = 'OpenFile_36x36.png';
+
+            % Create ClutterEditField
+            app.ClutterEditField = uieditfield(app.GridLayout2, 'text');
+            app.ClutterEditField.Editable = 'off';
+            app.ClutterEditField.FontSize = 11;
+            app.ClutterEditField.Layout.Row = 6;
+            app.ClutterEditField.Layout.Column = [1 3];
+
+            % Create EstaoreceptoraLabel
+            app.EstaoreceptoraLabel = uilabel(app.GridLayout2);
+            app.EstaoreceptoraLabel.VerticalAlignment = 'bottom';
+            app.EstaoreceptoraLabel.FontSize = 10;
+            app.EstaoreceptoraLabel.Layout.Row = 7;
+            app.EstaoreceptoraLabel.Layout.Column = 1;
+            app.EstaoreceptoraLabel.Text = 'Estação receptora:';
 
             % Create Panel_2
             app.Panel_2 = uipanel(app.GridLayout2);
@@ -3108,36 +3162,31 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.AlturaEditField.Layout.Column = 1;
             app.AlturaEditField.Value = 1.6;
 
-            % Create AntenaEditField_2Label
-            app.AntenaEditField_2Label = uilabel(app.GridLayout3);
-            app.AntenaEditField_2Label.VerticalAlignment = 'bottom';
-            app.AntenaEditField_2Label.FontSize = 10;
-            app.AntenaEditField_2Label.Layout.Row = 1;
-            app.AntenaEditField_2Label.Layout.Column = 2;
-            app.AntenaEditField_2Label.Text = 'Antena:';
-
-            % Create AntenaEditField_2
-            app.AntenaEditField_2 = uieditfield(app.GridLayout3, 'text');
-            app.AntenaEditField_2.Editable = 'off';
-            app.AntenaEditField_2.FontSize = 11;
-            app.AntenaEditField_2.Layout.Row = 2;
-            app.AntenaEditField_2.Layout.Column = [2 3];
+            % Create ArquivoantenaEditFieldLabel
+            app.ArquivoantenaEditFieldLabel = uilabel(app.GridLayout3);
+            app.ArquivoantenaEditFieldLabel.VerticalAlignment = 'bottom';
+            app.ArquivoantenaEditFieldLabel.FontSize = 10;
+            app.ArquivoantenaEditFieldLabel.Enable = 'off';
+            app.ArquivoantenaEditFieldLabel.Layout.Row = 1;
+            app.ArquivoantenaEditFieldLabel.Layout.Column = 2;
+            app.ArquivoantenaEditFieldLabel.Text = 'Arquivo antena:';
 
             % Create rxAntennaButton
             app.rxAntennaButton = uiimage(app.GridLayout3);
             app.rxAntennaButton.ImageClickedFcn = createCallbackFcn(app, @ImageClicked, true);
+            app.rxAntennaButton.Enable = 'off';
             app.rxAntennaButton.Layout.Row = 1;
             app.rxAntennaButton.Layout.Column = 3;
             app.rxAntennaButton.VerticalAlignment = 'bottom';
             app.rxAntennaButton.ImageSource = 'OpenFile_36x36.png';
 
-            % Create EstaoreceptoraLabel
-            app.EstaoreceptoraLabel = uilabel(app.GridLayout2);
-            app.EstaoreceptoraLabel.VerticalAlignment = 'bottom';
-            app.EstaoreceptoraLabel.FontSize = 10;
-            app.EstaoreceptoraLabel.Layout.Row = 7;
-            app.EstaoreceptoraLabel.Layout.Column = 1;
-            app.EstaoreceptoraLabel.Text = 'Estação receptora:';
+            % Create ArquivoantenaEditField
+            app.ArquivoantenaEditField = uieditfield(app.GridLayout3, 'text');
+            app.ArquivoantenaEditField.Editable = 'off';
+            app.ArquivoantenaEditField.FontSize = 11;
+            app.ArquivoantenaEditField.Enable = 'off';
+            app.ArquivoantenaEditField.Layout.Row = 2;
+            app.ArquivoantenaEditField.Layout.Column = [2 3];
 
             % Create EstaotransmissoraLabel
             app.EstaotransmissoraLabel = uilabel(app.GridLayout2);
@@ -3158,20 +3207,6 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.GridLayout4.RowSpacing = 5;
             app.GridLayout4.BackgroundColor = [1 1 1];
 
-            % Create FrequnciaMHzEditFieldLabel
-            app.FrequnciaMHzEditFieldLabel = uilabel(app.GridLayout4);
-            app.FrequnciaMHzEditFieldLabel.VerticalAlignment = 'bottom';
-            app.FrequnciaMHzEditFieldLabel.FontSize = 10;
-            app.FrequnciaMHzEditFieldLabel.Layout.Row = 5;
-            app.FrequnciaMHzEditFieldLabel.Layout.Column = 1;
-            app.FrequnciaMHzEditFieldLabel.Text = 'Frequência (MHz):';
-
-            % Create FrequnciaMHzEditField
-            app.FrequnciaMHzEditField = uieditfield(app.GridLayout4, 'numeric');
-            app.FrequnciaMHzEditField.FontSize = 11;
-            app.FrequnciaMHzEditField.Layout.Row = 6;
-            app.FrequnciaMHzEditField.Layout.Column = 1;
-
             % Create EstaoEditFieldLabel
             app.EstaoEditFieldLabel = uilabel(app.GridLayout4);
             app.EstaoEditFieldLabel.VerticalAlignment = 'bottom';
@@ -3186,6 +3221,48 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.EstaoEditField.FontSize = 11;
             app.EstaoEditField.Layout.Row = 2;
             app.EstaoEditField.Layout.Column = 1;
+
+            % Create IdentificaoEditFieldLabel
+            app.IdentificaoEditFieldLabel = uilabel(app.GridLayout4);
+            app.IdentificaoEditFieldLabel.VerticalAlignment = 'bottom';
+            app.IdentificaoEditFieldLabel.FontSize = 10;
+            app.IdentificaoEditFieldLabel.Layout.Row = 3;
+            app.IdentificaoEditFieldLabel.Layout.Column = 1;
+            app.IdentificaoEditFieldLabel.Text = 'Identificação:';
+
+            % Create IdentificaoEditField
+            app.IdentificaoEditField = uieditfield(app.GridLayout4, 'text');
+            app.IdentificaoEditField.FontSize = 11;
+            app.IdentificaoEditField.Layout.Row = 4;
+            app.IdentificaoEditField.Layout.Column = [1 2];
+
+            % Create FrequnciaMHzEditFieldLabel
+            app.FrequnciaMHzEditFieldLabel = uilabel(app.GridLayout4);
+            app.FrequnciaMHzEditFieldLabel.VerticalAlignment = 'bottom';
+            app.FrequnciaMHzEditFieldLabel.FontSize = 10;
+            app.FrequnciaMHzEditFieldLabel.Layout.Row = 5;
+            app.FrequnciaMHzEditFieldLabel.Layout.Column = 1;
+            app.FrequnciaMHzEditFieldLabel.Text = 'Frequência (MHz):';
+
+            % Create FrequnciaMHzEditField
+            app.FrequnciaMHzEditField = uieditfield(app.GridLayout4, 'numeric');
+            app.FrequnciaMHzEditField.FontSize = 11;
+            app.FrequnciaMHzEditField.Layout.Row = 6;
+            app.FrequnciaMHzEditField.Layout.Column = 1;
+
+            % Create PotnciaWattsEditFieldLabel
+            app.PotnciaWattsEditFieldLabel = uilabel(app.GridLayout4);
+            app.PotnciaWattsEditFieldLabel.VerticalAlignment = 'bottom';
+            app.PotnciaWattsEditFieldLabel.FontSize = 10;
+            app.PotnciaWattsEditFieldLabel.Layout.Row = 5;
+            app.PotnciaWattsEditFieldLabel.Layout.Column = 2;
+            app.PotnciaWattsEditFieldLabel.Text = 'Potência (Watts):';
+
+            % Create PotnciaWattsEditField
+            app.PotnciaWattsEditField = uieditfield(app.GridLayout4, 'numeric');
+            app.PotnciaWattsEditField.FontSize = 11;
+            app.PotnciaWattsEditField.Layout.Row = 6;
+            app.PotnciaWattsEditField.Layout.Column = 2;
 
             % Create LatitudeEditFieldLabel
             app.LatitudeEditFieldLabel = uilabel(app.GridLayout4);
@@ -3214,20 +3291,6 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.LongitudeEditField.FontSize = 11;
             app.LongitudeEditField.Layout.Row = 8;
             app.LongitudeEditField.Layout.Column = 2;
-
-            % Create PotnciaWattsEditFieldLabel
-            app.PotnciaWattsEditFieldLabel = uilabel(app.GridLayout4);
-            app.PotnciaWattsEditFieldLabel.VerticalAlignment = 'bottom';
-            app.PotnciaWattsEditFieldLabel.FontSize = 10;
-            app.PotnciaWattsEditFieldLabel.Layout.Row = 5;
-            app.PotnciaWattsEditFieldLabel.Layout.Column = 2;
-            app.PotnciaWattsEditFieldLabel.Text = 'Potência (Watts):';
-
-            % Create PotnciaWattsEditField
-            app.PotnciaWattsEditField = uieditfield(app.GridLayout4, 'numeric');
-            app.PotnciaWattsEditField.FontSize = 11;
-            app.PotnciaWattsEditField.Layout.Row = 6;
-            app.PotnciaWattsEditField.Layout.Column = 2;
 
             % Create AntenaLabel
             app.AntenaLabel = uilabel(app.GridLayout4);
@@ -3265,29 +3328,6 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.AlturaEditField_2.Layout.Column = 1;
             app.AlturaEditField_2.Value = 1.6;
 
-            % Create txAntennaLabel
-            app.txAntennaLabel = uilabel(app.GridLayout5);
-            app.txAntennaLabel.VerticalAlignment = 'bottom';
-            app.txAntennaLabel.FontSize = 10;
-            app.txAntennaLabel.Layout.Row = 3;
-            app.txAntennaLabel.Layout.Column = [1 3];
-            app.txAntennaLabel.Text = 'Arquivo:';
-
-            % Create txAntenna
-            app.txAntenna = uieditfield(app.GridLayout5, 'text');
-            app.txAntenna.Editable = 'off';
-            app.txAntenna.FontSize = 11;
-            app.txAntenna.Layout.Row = 4;
-            app.txAntenna.Layout.Column = [1 4];
-
-            % Create txAntennaButton
-            app.txAntennaButton = uiimage(app.GridLayout5);
-            app.txAntennaButton.ImageClickedFcn = createCallbackFcn(app, @ImageClicked, true);
-            app.txAntennaButton.Layout.Row = 3;
-            app.txAntennaButton.Layout.Column = 4;
-            app.txAntennaButton.VerticalAlignment = 'bottom';
-            app.txAntennaButton.ImageSource = 'OpenFile_36x36.png';
-
             % Create TiltEditFieldLabel
             app.TiltEditFieldLabel = uilabel(app.GridLayout5);
             app.TiltEditFieldLabel.VerticalAlignment = 'bottom';
@@ -3318,35 +3358,28 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.AzimuteEditField.Layout.Row = 2;
             app.AzimuteEditField.Layout.Column = [3 4];
 
-            % Create IdentificaoEditFieldLabel
-            app.IdentificaoEditFieldLabel = uilabel(app.GridLayout4);
-            app.IdentificaoEditFieldLabel.VerticalAlignment = 'bottom';
-            app.IdentificaoEditFieldLabel.FontSize = 10;
-            app.IdentificaoEditFieldLabel.Layout.Row = 3;
-            app.IdentificaoEditFieldLabel.Layout.Column = 1;
-            app.IdentificaoEditFieldLabel.Text = 'Identificação:';
+            % Create txAntennaLabel
+            app.txAntennaLabel = uilabel(app.GridLayout5);
+            app.txAntennaLabel.VerticalAlignment = 'bottom';
+            app.txAntennaLabel.FontSize = 10;
+            app.txAntennaLabel.Layout.Row = 3;
+            app.txAntennaLabel.Layout.Column = [1 3];
+            app.txAntennaLabel.Text = 'Arquivo:';
 
-            % Create IdentificaoEditField
-            app.IdentificaoEditField = uieditfield(app.GridLayout4, 'text');
-            app.IdentificaoEditField.FontSize = 11;
-            app.IdentificaoEditField.Layout.Row = 4;
-            app.IdentificaoEditField.Layout.Column = [1 2];
+            % Create txAntennaButton
+            app.txAntennaButton = uiimage(app.GridLayout5);
+            app.txAntennaButton.ImageClickedFcn = createCallbackFcn(app, @ImageClicked, true);
+            app.txAntennaButton.Layout.Row = 3;
+            app.txAntennaButton.Layout.Column = 4;
+            app.txAntennaButton.VerticalAlignment = 'bottom';
+            app.txAntennaButton.ImageSource = 'OpenFile_36x36.png';
 
-            % Create RaiokmEditFieldLabel
-            app.RaiokmEditFieldLabel = uilabel(app.GridLayout2);
-            app.RaiokmEditFieldLabel.VerticalAlignment = 'bottom';
-            app.RaiokmEditFieldLabel.FontSize = 10;
-            app.RaiokmEditFieldLabel.Layout.Row = 1;
-            app.RaiokmEditFieldLabel.Layout.Column = 2;
-            app.RaiokmEditFieldLabel.Text = 'Raio (km):';
-
-            % Create RaiokmEditField
-            app.RaiokmEditField = uieditfield(app.GridLayout2, 'numeric');
-            app.RaiokmEditField.Limits = [0 Inf];
-            app.RaiokmEditField.FontSize = 11;
-            app.RaiokmEditField.Layout.Row = 2;
-            app.RaiokmEditField.Layout.Column = [2 3];
-            app.RaiokmEditField.Value = 5;
+            % Create txAntenna
+            app.txAntenna = uieditfield(app.GridLayout5, 'text');
+            app.txAntenna.Editable = 'off';
+            app.txAntenna.FontSize = 11;
+            app.txAntenna.Layout.Row = 4;
+            app.txAntenna.Layout.Column = [1 4];
 
             % Create menu_MainGrid
             app.menu_MainGrid = uigridlayout(app.panelGrid);
@@ -3558,7 +3591,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
 
             % Create toolGrid
             app.toolGrid = uigridlayout(app.GridLayout);
-            app.toolGrid.ColumnWidth = {22, 22, 22, 22, 5, 22, 22, '1x', 18};
+            app.toolGrid.ColumnWidth = {22, 22, 22, 22, 5, 22, 90, '1x', 18};
             app.toolGrid.RowHeight = {4, 17, 2};
             app.toolGrid.ColumnSpacing = 5;
             app.toolGrid.RowSpacing = 0;
@@ -3636,11 +3669,16 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.tool_tableNRowsIcon.Layout.Column = 9;
             app.tool_tableNRowsIcon.ImageSource = 'Filter_18.png';
 
-            % Create tool_ExportButton_2
-            app.tool_ExportButton_2 = uiimage(app.toolGrid);
-            app.tool_ExportButton_2.Layout.Row = 2;
-            app.tool_ExportButton_2.Layout.Column = 7;
-            app.tool_ExportButton_2.ImageSource = 'play_32.png';
+            % Create TESTEButton
+            app.TESTEButton = uibutton(app.toolGrid, 'push');
+            app.TESTEButton.ButtonPushedFcn = createCallbackFcn(app, @TESTEButtonPushed3, true);
+            app.TESTEButton.Icon = 'play_32.png';
+            app.TESTEButton.BackgroundColor = [1 1 0];
+            app.TESTEButton.FontSize = 10;
+            app.TESTEButton.FontColor = [0.149 0.149 0.149];
+            app.TESTEButton.Layout.Row = [1 3];
+            app.TESTEButton.Layout.Column = 7;
+            app.TESTEButton.Text = 'TESTE';
 
             % Create filter_ContextMenu
             app.filter_ContextMenu = uicontextmenu(app.UIFigure);

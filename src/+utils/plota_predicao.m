@@ -1,4 +1,4 @@
-function plota_predicao(dadosPredicao, Z, tipoZ)
+function plota_predicao(dadosPredicao, Z, tipoZ, axesHandle)
     %----------------------------------------------------------------------
     % Plota o mapa da mancha de prediçao
     %   fileData: arquivo que contém a estrutura com parâmetros da predição
@@ -9,6 +9,7 @@ function plota_predicao(dadosPredicao, Z, tipoZ)
         dadosPredicao struct {mustBeNonempty}
         Z (:, :) double
         tipoZ string
+        axesHandle = []
     end
     
     dir_app = fileparts(mfilename('fullpath'));
@@ -33,7 +34,11 @@ function plota_predicao(dadosPredicao, Z, tipoZ)
     %----------------------------------------------------------------------
     % Caracteristicas da area
     % Carrega dados do relevo
-    [A, R] = utils.loadRaster(fullfile(dir_app, '..', '..', dadosPredicao.dadosRelevo), true);
+    arquivoRelevo = dadosPredicao.dadosRelevo;
+    if ~isfile(arquivoRelevo)
+        arquivoRelevo = fullfile(dir_app, '..', '..', dadosPredicao.dadosRelevo);
+    end
+    [A, R] = utils.loadRaster(arquivoRelevo, true);
     [A, R] = utils.resizeGeotiff(A, R);
     
     %--------------------------------------------------------------------------
@@ -41,12 +46,22 @@ function plota_predicao(dadosPredicao, Z, tipoZ)
     [n, m] = utils.get_raster_idx(base.Latitude, base.Longitude, R);
     elevBase = A(n, m);
 
-    figure
-    set(gcf, 'Name', 'Predição de Cobertura', 'NumberTitle', 'off');
-    axesm('MapProjection','mercator','MapLatLimit',R.LatitudeLimits+[-1 1])
-    geoshow(Z, R, DisplayType="texturemap")
-    geoshow(base.Latitude,base.Longitude,DisplayType="point",ZData=elevBase, ...
-        MarkerEdgeColor="k",MarkerFaceColor="c",MarkerSize=10,Marker="o")
+    if isempty(axesHandle)
+        figure('Name', 'Predição de Cobertura', 'NumberTitle', 'off');
+        axesm('MapProjection','mercator','MapLatLimit',R.LatitudeLimits+[-1 1])
+        geoshow(Z, R, DisplayType="texturemap")
+        geoshow(base.Latitude, base.Longitude, DisplayType="point", ZData=elevBase, MarkerEdgeColor="k", MarkerFaceColor="c", MarkerSize=10, Marker="o")
+    
+    else
+        [latGrid, lonGrid] = geographicGrid(R);
+        lat = latGrid(:);
+        lon = lonGrid(:);
+        val = Z(:);
+
+        geoscatter(axesHandle, lat, lon, 20, val, 'filled');
+        geoplot3(axesHandle, base.Latitude, base.Longitude, elevBase, 'ko', 'MarkerFaceColor', 'c', 'MarkerSize', 10);
+    end
+
     title (sprintf('Dados de Cobertura (%s) da estação %s\nModelo: %s', tipoZ, dadosPredicao.Base.Nome, modelo));
     
     if tipoZ == "Nível de sinal"
