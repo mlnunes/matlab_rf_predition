@@ -47,25 +47,21 @@ function plota_predicao(dadosPredicao, Z, tipoZ, axesHandle)
     elevBase = A(n, m);
 
     if isempty(axesHandle)
-        figure('Name', 'Predição de Cobertura', 'NumberTitle', 'off');
-        axesm('MapProjection','mercator','MapLatLimit',R.LatitudeLimits+[-1 1])
-        geoshow(Z, R, DisplayType="texturemap")
-        geoshow(base.Latitude, base.Longitude, DisplayType="point", ZData=elevBase, MarkerEdgeColor="k", MarkerFaceColor="c", MarkerSize=10, Marker="o")
-    
+        axesHandle = axesm('mercator', 'MapLatLimit', R.LatitudeLimits+[-1 1]);
     else
-        [latGrid, lonGrid] = geographicGrid(R);
-        lat = latGrid(:);
-        lon = lonGrid(:);
-        val = Z(:);
-
-        geoscatter(axesHandle, lat, lon, 20, val, 'filled');
-        geoplot3(axesHandle, base.Latitude, base.Longitude, elevBase, 'ko', 'MarkerFaceColor', 'c', 'MarkerSize', 10);
+        matlab.axesm('mercator', 'MapLatLimit', R.LatitudeLimits+[-1 1], axesHandle)
     end
+    
+    geoshow(axesHandle, Z, R, DisplayType="texturemap")
+    geoshow(axesHandle, base.Latitude, base.Longitude, DisplayType="point", ZData=elevBase, MarkerEdgeColor="k", MarkerFaceColor="c", MarkerSize=10, Marker="o")
 
-    title (sprintf('Dados de Cobertura (%s) da estação %s\nModelo: %s', tipoZ, dadosPredicao.Base.Nome, modelo));
+    axesHandle.Parent.Visible = 1;
+    
+    title(axesHandle, sprintf('Dados de Cobertura (%s) da estação %s', tipoZ, dadosPredicao.Base.Nome));
+    subtitle(axesHandle, sprintf('Modelo: %s', modelo));
     
     if tipoZ == "Nível de sinal"
-        colormap('turbo')
+        colormap(axesHandle, 'turbo')
     else
     % cria um colormap do branco->amarelo->vermelho 
         cmap = zeros(256, 3);
@@ -74,15 +70,13 @@ function plota_predicao(dadosPredicao, Z, tipoZ, axesHandle)
         cmap(129:end, 1) = 1;
         cmap(129:end, 2) = linspace(1, 0, 128);
     
-        colormap(cmap)
+        colormap(axesHandle, cmap)
     end
-    colorbar
-  
-    text1 = dadosPredicao.Base.Nome;
-    delta = 0.0025;
-    textm(base.Latitude+delta,base.Longitude+delta,text1)
-    cb = colorbar;
+    cb = colorbar(axesHandle, "eastoutside");
     cb.Label.String = tipoZ;
-
+  
+    % text1 = dadosPredicao.Base.Nome;
+    % delta = 0.0025;
+    %textm(base.Latitude+delta,base.Longitude+delta,text1)
 end
 

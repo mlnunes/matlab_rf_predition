@@ -18,11 +18,12 @@ run(arquivoConfig);
 graf = {'Atenuação', 'Nível de sinal', 'Não'};
 grafico = menu('Deseja ver o gráfico do resultado?', graf);
 
+f = uifigure;
+ax = uiaxes(f, 'Units', 'normalized', 'Position', [0,0,1,1]);
+
 if grafico == 1
-    utils.plota_predicao(arquivoConfig, lb, graf{grafico})
-
+    utils.plota_predicao(dadosPredicao, lb, graf{grafico}, ax)
 elseif grafico == 2
-    utils.plota_predicao(arquivoConfig, prx, graf{grafico})
-
+    utils.plota_predicao(dadosPredicao, prx, graf{grafico}, ax)
 end
 
