@@ -598,7 +598,7 @@ classdef winConfig_exported < matlab.apps.AppBase
             app.menuUnderline.ScaleMethod = 'none';
             app.menuUnderline.Layout.Row = 3;
             app.menuUnderline.Layout.Column = 2;
-            app.menuUnderline.ImageSource = 'LineH.svg';
+            app.menuUnderline.ImageSource = 'LineH.png';
 
             % Create LeftPanel
             app.LeftPanel = uipanel(app.GridLayout);

@@ -17,6 +17,7 @@ dir_app = fileparts(mfilename('fullpath'));
 
 %----------------------------------------------------------------------
 % Carrega os parâmetros utilizados para realizar a predição
+%run(fileData);
 
 modelo = dadosPredicao.modeloPredicao;
 
@@ -46,21 +47,10 @@ end
 elevBase = A(n, m);
 
 if isempty(axesHandle)
-        figure('Name', 'Predição de Cobertura', 'NumberTitle', 'off');
-        axesm('MapProjection','mercator','MapLatLimit',R.LatitudeLimits+[-1 1])
-        geoshow(Z, R, DisplayType="texturemap")
-        geoshow(base.Latitude, base.Longitude, DisplayType="point", ZData=elevBase, MarkerEdgeColor="k", MarkerFaceColor="c", MarkerSize=10, Marker="o")
-    
-    else
-        [latGrid, lonGrid] = geographicGrid(R);
-        lat = latGrid(:);
-        lon = lonGrid(:);
-        val = Z(:);
-
-        geoscatter(axesHandle, lat, lon, 20, val, 'filled');
-        geoplot3(axesHandle, base.Latitude, base.Longitude, elevBase, 'ko', 'MarkerFaceColor', 'c', 'MarkerSize', 10);
-    end
-
+    figure('Name', 'Predição de Cobertura', 'NumberTitle', 'off');
+    axesm('MapProjection','mercator','MapLatLimit',R.LatitudeLimits+[-1 1])
+    geoshow(Z, R, DisplayType="texturemap", Parent=axesHandle)
+    geoshow(base.Latitude, base.Longitude, DisplayType="point", ZData=elevBase, MarkerEdgeColor="k", MarkerFaceColor="c", MarkerSize=10, Marker="o")
     title (sprintf('Dados de Cobertura (%s) da estação %s\nModelo: %s', tipoZ, dadosPredicao.Base.Nome, modelo));
 
     if tipoZ == "Nível de sinal"
@@ -85,6 +75,14 @@ if isempty(axesHandle)
     cb.Label.String = tipoZ;
 
 else
+    % % [latGrid, lonGrid] = geographicGrid(R);
+    % % lat = latGrid(:);
+    % % lon = lonGrid(:);
+    % % val = Z(:);
+    % %
+    % % geoscatter(axesHandle, lat, lon, 20, val, 'filled');
+    % % geoplot3(axesHandle, base.Latitude, base.Longitude, elevBase, 'ko', 'MarkerFaceColor', 'c', 'MarkerSize', 15);
+    % %georastershow(axesHandle, Z, R);
     Z(isinf(Z)) = nan;
     alfa = 0.4;
     [latGrid, lonGrid] = meshgrid( ...
@@ -92,6 +90,91 @@ else
         linspace(R.LongitudeLimits(1), R.LongitudeLimits(2), size(Z,2)));
     latGrid = latGrid';
     lonGrid = lonGrid';
+    %
+    % %------------------------------------------------------------------
+    % % Definição dos intervalos de agrupamento das medidas
+    % limiares = min(min(Z)) : 7 : max(max(Z));
+    % nn = length(limiares);
+    %
+    % %------------------------------------------------------------------
+    % % Definição do colormap
+    % coresRGB = turbo(nn);
+    % coresCell = mat2cell(coresRGB, ones(1, nn), 3);
+    %
+    % %------------------------------------------------------------------
+    % % Apaga os plots existente
+    % cla(axesHandle);
+    %
+    % %------------------------------------------------------------------
+    % % Criação das formas dos contornos das medidas
+    %
+    % for i = 1:nn
+    %     limiar = limiares(i);
+    %
+    %     %--------------------------------------------------------------
+    %     % Máscara da área com sinal maior ou igual ao limiar
+    %     mascara = Z >= limiar;
+    %
+    %     %--------------------------------------------------------------
+    %     % Remover áreas já plotadas por limiares mais altos
+    %     if i < nn - 1
+    %         mascara = mascara & Z < limiares(i+2);
+    %     end
+    %
+    %     %--------------------------------------------------------------
+    %     % Encontrar contornos das regiões conectadas
+    %     B = bwboundaries(mascara);
+    %
+    %     for k = 1:length(B)
+    %         contorno = B{k};
+    %         row = contorno(:,1);
+    %         col = contorno(:,2);
+    %
+    %         %----------------------------------------------------------
+    %         % Coordenadas geográficas
+    %         lat = latGrid(sub2ind(size(latGrid), row, col));
+    %         lon = lonGrid(sub2ind(size(lonGrid), row, col));
+    %
+    %         %----------------------------------------------------------
+    %         % Criar e plotar polígono
+    %         try
+    %             shp = geopolyshape(lat, lon);
+    %             geoplot(axesHandle, shp, ...
+    %                 'FaceColor', coresCell{i}, ...
+    %                 'FaceAlpha', alfa, ...
+    %                 'EdgeColor', 'none', ...
+    %                 'LineWidth', 0.01);
+    %         catch
+    %             continue
+    %         end
+    %
+    %     end
+    % end
+    %
+    % %----------------------------------------------------------------------
+    % % Centralizar o mapa
+    %
+    % lat_span = max(latGrid(:)) - min(latGrid(:));
+    % lon_span = max(lonGrid(:)) - min(lonGrid(:));
+    % margin = 0.05;
+    % geolimits(axesHandle, ...
+    %     [min(latGrid(:)) - margin * lat_span, max(latGrid(:)) + margin * lat_span], ...
+    %     [min(lonGrid(:)) - margin * lon_span, max(lonGrid(:)) + margin * lon_span]);
+    %
+    % %----------------------------------------------------------------------
+    % % Criar legenda
+    % legendas = strings(1, nn -2);
+    % patchHandles = gobjects(1, nn -2);
+    % for i = 1:nn -2
+    %     patchHandles(i) = geoplot(axesHandle, NaN, NaN, ...
+    %         'square', 'MarkerFaceColor', coresCell{i}, ...
+    %         'MarkerEdgeColor', 'none');
+    %     legendas(i) = sprintf('%.0f a %.0f dBm', limiares(i), limiares(i+2));
+    % end
+    %
+    % legend(axesHandle, patchHandles, legendas, ...
+    %     'Location', 'northeast', 'Orientation', 'vertical', 'Box', 'on', ...
+    %     'TextColor', 'w', 'FontSize', 8, 'Color', [0.25,0.25,0.25], 'NumColumns', 1);
 
     cla(axesHandle);
     atualBasemap = axesHandle.Basemap;
@@ -170,14 +253,6 @@ else
     removeCustomBasemap PredicaoPropagRF
     addCustomBasemap('PredicaoPropagRF', arquivoTile, 'Attribution', 'Anatel')
     geobasemap(axesHandle, 'PredicaoPropagRF')
-    txPlot = geoscatter(axesHandle, base.Latitude, base.Longitude, 80, 'w^', 'filled');
-    dtt = txPlot.DataTipTemplate;
-    linha_nome = dataTipTextRow('Nome:', {base.Name});
-    linha_lat = dataTipTextRow('Lat:', {round(base.Latitude, 4)});
-    linha_lon = dataTipTextRow('Lon:', {round(base.Longitude, 4)});
-    dtt.DataTipRows = [linha_nome, linha_lat, linha_lon];
-
-    %geoplot3(axesHandle, base.Latitude, base.Longitude, elevBase, 'co', 'MarkerSize', 5);
 end
 
 end

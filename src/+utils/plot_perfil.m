@@ -1,4 +1,4 @@
-function plot_perfil(fileData, latRX, lonRX)
+function plot_perfil(fileData, latRX, lonRX, axesHandle)
 %----------------------------------------------------------------------
 % Traça o grafico do perfil do terreno, posiçao das estaçoes, linha de
 % visada e primeira zona de Fresnel
@@ -14,22 +14,24 @@ arguments
     fileData
     latRX double
     lonRX double
+    axesHandle = []
 end
 
-% if ~isstruct(fileData)
-%     if isfile(fileData)
+if ~isstruct(fileData)
+    if isfile(fileData)
         %----------------------------------------------------------------------
-        % Carrega os parâmetros utilizados para realizar a predição
+        %Carrega os parâmetros utilizados para realizar a predição
         run(fileData)
-%     else
-%         return
-%     end
-% end
-% 
-% if isempty(dadosPredicao)
-%     return
-% 
-% else
+    else
+        return
+    end
+else
+    dadosPredicao = fileData;
+end
+
+if isempty(dadosPredicao)
+    return
+else
 
     %----------------------------------------------------------------------
     % Carrega o modelo de predição a ser empregado
@@ -104,7 +106,7 @@ end
 
     Fu = ((elevacoes(end) + RX.AntennaHeight - elevTX)/...
         distancias_km(end)) * distancias_km + (elevTX + alt_visada) + F;
-    
+
     alturas_clutter = clutter;
 
     %----------------------------------------------------------------------
@@ -132,7 +134,7 @@ end
             alturas_clutter(alturas_clutter == 3) = 10;
             alturas_clutter(alturas_clutter == 4) = 15;
             alturas_clutter(alturas_clutter == 5) = 20;
-            
+
 
         case 'P.526'
             predicao = model.P526(TX, RX_enlace, A, R, C, S);
@@ -159,7 +161,6 @@ end
 
         %------------------------------------------------------------------
         % extrai os dados de ganho na direção do ponto
-        % [gH, gV] = antenaBase.ganhoDirecao(azimutePonto, inclinacaoPonto);
         [gH, gV] = ganhoDirecao(antenaBase, azimutePonto, inclinacaoPonto);
         gAnt = antenaBase.Ganho - gH - gV;
 
@@ -182,11 +183,24 @@ end
     %----------------------------------------------------------------------
     % Definições da área do gráfico
 
-    figure('Units', 'centimeters', 'Position', [1 1 60 7])
-    hold on;
-    yyaxis left
-    ylabel('Elevações (m)')
-    xlabel('distância (Km)')
+    if isempty(axesHandle)
+        figure('Units', 'centimeters', 'Position', [1 1 60 7])
+        ax = axes();
+        hold on;
+    else
+        ax = axesHandle;
+    end
+     yyaxis(ax, "right")
+     cla(ax);
+     yyaxis(ax, "left")
+     cla(ax)
+
+
+    ax.View = [0,90];
+    ylabel(ax, 'Elevações (m)');
+    xlabel(ax, 'distância (Km)');
+    ylim(ax, [min(min_elevacao, min(Fl)) inf])
+    xlim(ax,[distancias(1) distancias(end)])
 
     %----------------------------------------------------------------------
     % mapeia os valores de clutter com cores representativas
@@ -206,7 +220,7 @@ end
             cor = 1;
         end
 
-        fill([distancias(n) distancias(n) distancias(n+1) distancias(n+1)],...
+        fill(ax, [distancias(n) distancias(n) distancias(n+1) distancias(n+1)],...
             [elevacoes(n)  (elevacoes(n) + alturas_clutter(n)) ...
             (elevacoes(n) + alturas_clutter(n)) elevacoes(n)], ...
             cores(cor,:), 'EdgeColor', 'none');
@@ -214,55 +228,72 @@ end
 
     %----------------------------------------------------------------------
     % Plot do perfil de elevações
-    area(distancias, elevacoes, 'FaceColor', '#90a2b5', 'EdgeColor', '#101010');
-    ylim([min(min_elevacao, min(Fl)) inf])
+    area(ax, distancias, elevacoes, 'FaceColor', '#90a2b5', 'EdgeColor', '#101010', 'basevalue', min(min_elevacao, min(Fl)));
+
 
 
     %----------------------------------------------------------------------
     % desenha a linha de visada
-    plot([distancias(1) distancias(end)], [(elevTX + TX.AntennaHeight) ...
+    plot(ax, [distancias(1) distancias(end)], [(elevTX + TX.AntennaHeight) ...
         (elevRX + RX.AntennaHeight)], 'Color', '#00f9ff');
 
     %----------------------------------------------------------------------
     % desenha os limites da primeira zona de Fresnel
-    plot(distancias, Fl,'-.', 'Color', '#007cff');
-    plot(distancias, Fu,'-.', 'Color', '#007cff');
+    plot(ax, distancias, Fl,'-.', 'Color', '#007cff');
+    plot(ax, distancias, Fu,'-.', 'Color', '#007cff');
+
+    yyaxis(ax, "right")
 
     %----------------------------------------------------------------------
     % desenha o grafico de campo E recebido
-    yyaxis right
-    yticks(0:15:(1.5 * max(E_enlace)));
-    ylabel('E (dBuV/m)')
-    plot(distancias_enlace, E_enlace, 'Color', '#00ff88');
-
-    %----------------------------------------------------------------------
-    % define a cor de fundo
-    ax = gca;
-    ax.Color = 'white';
+ 
+    ylim(ax, [0 (1.5 * max(E_enlace))]);
+    %plot(ax, distancias_enlace, E_enlace, 'Color', '#00ff88');
+    plot(ax, distancias_enlace, E_enlace, 'Color', [0.8510, 0.3255, 0.0980]);
 
     hold off;
 
     %----------------------------------------------------------------------
     % Informações da simulação
-    fprintf("Dados da simulação: modelo %s\n", modelo)
-    fprintf("TX:\nAltitude: %.1f m\nCoord: %.5f %.5f\n",elevTX, TX.Longitude, TX.Latitude);
-    fprintf("Frequência: %.1f MHz\n", TX.TransmitterFrequency/1e6)
-    fprintf("Potência: %.1f W\n",TX.TransmitterPower)
-    fprintf("Antena: %.1fm\n", TX.AntennaHeight)
-    fprintf("\tGanho: %.1f dBi\n", antenaBase.Ganho)
-    fprintf("\tMáxima potência irradiada, %.1f dBW\n", (10*log10(TX.TransmitterPower) + antenaBase.Ganho))
-    fprintf("\tAzimute: %.1f°\t/ tilt: %.1f°\n", dadosPredicao.Base.Antena.Azimute, dadosPredicao.Base.Antena.tiltMecanico)
-    fprintf("\nRX:\nAltitude: %.1f m\nCoor: %.5f %.5f\n", elevRX, RX.Latitude, RX.Longitude)
-    fprintf("Antena: %.1f m\n", RX.AntennaHeight)
-    fprintf("Nível de sinal recebido: %.1f dBm\n", E_enlace(end))
-    fprintf("\nEnlace:\nDistancia: %.1f Km\n", distancias(end))
-    fprintf("Angulos: V: %.2f° H: %.2f°\n", inclinacaoPonto, azimutePonto)
-    fprintf("Padrão de atenuação da antena: V: %.2f dB H: %.2f dB\n", gV, gH)
-    fprintf("Antenução no espaço livre: %.1f dB - Atenuação total: %.1f dB\n", FSL, Atn)
-    fprintf("Atenuação do modelo: %.1f dB\n", (Atn - FSL + gAnt))
-
+    footNotePosition = 0;
+    footNoteAlign = 'left';
+    Footnote = sprintf([ ...
+        "\n\n\n\\bfDados da simulação: modelo %s\n" + ...
+        "\\bfTX:\nAltitude: %.1f m\nCoord: %.5f %.5f\n" + ...
+        "Frequência: %.1f MHz\n" + ...
+        "Potência: %.1f W\n" + ...
+        "Antena: %.1f m\n" + ...
+        "\tGanho: %.1f dBi\n" + ...
+        "\tMáxima potência irradiada: %.1f dBW\n" + ...
+        "\tAzimute: %.1f°\t/ tilt: %.1f°\n\n" + ...
+        "\\bfRX:\nAltitude: %.1f m\nCoor: %.5f %.5f\n" + ...
+        "Antena: %.1f m\n" + ...
+        "Nível de sinal recebido: %.1f dBm\n\n" + ...
+        "\\bfEnlace:\nDistância: %.1f Km\n" + ...
+        "Ângulos: V: %.2f° H: %.2f°\n" + ...
+        "Padrão de atenuação da antena: V: %.2f dB H: %.2f dB\n" + ...
+        "Atenuação no espaço livre: %.1f dB - Atenuação total: %.1f dB\n" + ...
+        "Atenuação do modelo: %.1f dB\n" ...
+        ], ...
+        modelo, ...
+        elevTX, TX.Longitude, TX.Latitude, ...
+        TX.TransmitterFrequency/1e6, ...
+        TX.TransmitterPower, ...
+        TX.AntennaHeight, ...
+        antenaBase.Ganho, ...
+        (10*log10(TX.TransmitterPower) + antenaBase.Ganho), ...
+        dadosPredicao.Base.Antena.Azimute, dadosPredicao.Base.Antena.tiltMecanico, ...
+        elevRX, RX.Latitude, RX.Longitude, ...
+        RX.AntennaHeight, ...
+        E_enlace(end), ...
+        distancias(end), ...
+        inclinacaoPonto, azimutePonto, ...
+        gV, gH, ...
+        FSL, Atn, ...
+        (Atn - FSL + gAnt) ...
+        );
+    text(ax, footNotePosition,2, Footnote, Units='normalized', FontSize=12, Interpreter='tex', HorizontalAlignment=footNoteAlign, VerticalAlignment='top', PickableParts='none', Tag='Footnote');
 
 
 end
 
-% end

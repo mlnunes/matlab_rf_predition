@@ -762,7 +762,7 @@ classdef winRFPreview_exported < matlab.apps.AppBase
             app.UIFigure.Color = [0.9412 0.9412 0.9412];
             app.UIFigure.Position = [100 100 1244 660];
             app.UIFigure.Name = 'rfPreview';
-            app.UIFigure.Icon = 'D:\InovaFiscaliza\matlab_rf_predition\src\resources\Icons\icon_48.png';
+            app.UIFigure.Icon = 'src\resources\Icons\icon_48.png';
             app.UIFigure.CloseRequestFcn = createCallbackFcn(app, @closeFcn, true);
             app.UIFigure.HandleVisibility = 'on';
 

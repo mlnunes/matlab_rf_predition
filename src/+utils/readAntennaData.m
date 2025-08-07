@@ -1,4 +1,4 @@
-function antenaObj = readAntennaData(filename, Nome, Tipo, Azimute, Tilt_mec)
+function antenaObj = readAntennaData(filename, Nome, Tipo, Azimute, Tilt_mec, Ganho)
     %----------------------------------------------------------
     % Carrega a função parse para cada extensão de arquivo de 
     % definição de características de antena e retorna um objeto
@@ -19,6 +19,7 @@ function antenaObj = readAntennaData(filename, Nome, Tipo, Azimute, Tilt_mec)
         Tipo char {mustBeMember(Tipo, {'TX', 'RX'})} = 'TX'
         Azimute double {mustBeInRange(Azimute,0,360,"exclude-upper")} = 0.0
         Tilt_mec double {mustBeInRange(Tilt_mec,-90, 90)} = 0.0
+        Ganho double = 0.0;
    
     end
 
@@ -68,9 +69,15 @@ function antenaObj = readAntennaData(filename, Nome, Tipo, Azimute, Tilt_mec)
     
     else
         % Valor padrão para o caso de não carregar o arquivo da antena
-        antenaObj.Ganho = 0;
-        antenaObj.H_ganho = [(0:359)', zeros(360,1)];
-        antenaObj.V_ganho = antenaObj.H_ganho;
+        antenaObj.Ganho = Ganho;
+        antenaObj.V_ganho = [(0:359)', zeros(360,1)];
+
+        if ~isempty(filename)
+            antenaObj.H_ganho = utils.categoricalPatternToArray(filename);
+        else
+            antenaObj.H_ganho = antenaObj.V_ganho;
+        end
+
     end
     
 end

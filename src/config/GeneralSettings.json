@@ -1,5 +1,5 @@
 {
-    "version": 0.03,
+    "version": 0.04,
     "operationMode": {
         "Debug": false,
         "Dock": false,
@@ -44,6 +44,11 @@
                 "description": "...",
                 "constraints": "..."
             }
+        ],
+        "basemapsLayers": [
+            "streets",
+            "satellite",
+            "topographic"
         ]
     },
     "Plot": {

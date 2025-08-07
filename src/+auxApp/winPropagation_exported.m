@@ -2092,7 +2092,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
                                                                     'Tipo', 'isotropic')));
 
             [lb, prx] = utils.predicao_area(raio_metros, dadosPredicao);
-            utils.plota_predicao(dadosPredicao, lb, 1, app.UIAxes1);
+            utils.plota_predicao(dadosPredicao, prx, 1, app.UIAxes1);
 
 
         end
@@ -2306,7 +2306,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.stationInfoImage.Visible = 'off';
             app.stationInfoImage.Layout.Row = [3 5];
             app.stationInfoImage.Layout.Column = [1 3];
-            app.stationInfoImage.ImageSource = 'warning.svg';
+            app.stationInfoImage.ImageSource = 'Warn_18.png';
 
             % Create stationInfoAntennaPattern
             app.stationInfoAntennaPattern = uipanel(app.Tab1_Grid);
@@ -3397,7 +3397,7 @@ classdef winPropagation_exported < matlab.apps.AppBase
             app.menuUnderline.ScaleMethod = 'none';
             app.menuUnderline.Layout.Row = 2;
             app.menuUnderline.Layout.Column = 1;
-            app.menuUnderline.ImageSource = 'LineH.svg';
+            app.menuUnderline.ImageSource = 'LineH.png';
 
             % Create menu_Button1Grid
             app.menu_Button1Grid = uigridlayout(app.menu_MainGrid);
